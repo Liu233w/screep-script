@@ -17,7 +17,7 @@ function dispatch(creep) {
             return
         }
 
-        if (creep.memory.state === STATES.IDLE) {
+        if (creep.memory.state === STATES.IDLE || !creep.memory.state) {
 
             if (getWorkerCount(STATES.UPGRADE) < 1) {
                 tryChangeState(creep, STATES.UPGRADE)
