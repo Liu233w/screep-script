@@ -75,6 +75,11 @@ function destruct(creepMemory) {
     Memory.workerCount[creepMemory.state] -= 1
 }
 
+/**
+ *  
+ * @param {Creep} creep 
+ * @param {string} newState 
+ */
 function tryChangeState(creep, newState) {
 
     const oldState = creep.memory.state
@@ -157,6 +162,10 @@ const CHANGE_SOURCE_THRESHHOLD = 3
 
 const actions = {
 
+    /**
+     *  
+     * @param {Creep} creep 
+     */
     harvest(creep) {
         if (creep.carry.energy < creep.carryCapacity) {
 
@@ -210,6 +219,10 @@ const actions = {
             tryChangeState(creep, STATES.IDLE)
         }
     },
+    /**
+     * 
+     * @param {Creep} creep 
+     */
     transfer(creep) {
         const target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: (structure) => {
@@ -227,12 +240,20 @@ const actions = {
             tryChangeState(creep, STATES.IDLE)
         }
     },
+    /**
+     * 
+     * @param {Creep} creep 
+     */
     upgrade(creep) {
         creep.say('✨ upgrade')
         if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
             moveTo(creep, creep.room.controller)
         }
     },
+    /**
+     * 
+     * @param {Creep} creep 
+     */
     build(creep) {
         const target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES)
         if (target) {
@@ -244,6 +265,10 @@ const actions = {
             tryChangeState(creep, STATES.IDLE)
         }
     },
+    /**
+     * 
+     * @param {Creep} creep 
+     */
     renew(creep) {
 
         if (creep.ticksToLive >= 1400) {
