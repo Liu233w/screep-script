@@ -1,0 +1,3 @@
+(function () {
+    Memory.workerCount = {}
+})()
