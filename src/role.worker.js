@@ -11,6 +11,10 @@ function dispatch(creep) {
 
     (function () {
 
+        if (!creep.memory.state) {
+            tryChangeState(creep, STATES.IDLE)
+        }
+
         if (creep.ticksToLive <= 100 && creep.body.length > 3) {
             tryChangeState(creep, STATES.RENEW)
             return
@@ -21,7 +25,7 @@ function dispatch(creep) {
             return
         }
 
-        if (creep.memory.state === STATES.IDLE || !creep.memory.state) {
+        if (creep.memory.state === STATES.IDLE) {
 
             if (getWorkerCount(STATES.UPGRADE) < 1) {
                 tryChangeState(creep, STATES.UPGRADE)
@@ -48,7 +52,7 @@ function dispatch(creep) {
                 return
             }
 
-            tryChangeState(creep, STATES.upgrade)
+            tryChangeState(creep, STATES.UPGRADE)
             return
         }
     })()
