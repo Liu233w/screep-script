@@ -3,6 +3,10 @@ function beforeAll(creeps) {
     Memory.sourceWorkerCount = _.countBy(creeps, 'memory.source')
 }
 
+/**
+ * 
+ * @param {Creep} creep 
+ */
 function dispatch(creep) {
 
     (function () {
@@ -60,7 +64,7 @@ function dispatch(creep) {
     } else if (creep.memory.state === STATES.RENEW) {
         actions.renew(creep)
     } else {
-        console.log('illegal state')
+        console.log('illegal state, in creep ' + creep.name)
     }
 }
 
