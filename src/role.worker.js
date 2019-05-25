@@ -11,7 +11,7 @@ function dispatch(creep) {
 
     (function () {
 
-        if (creep.ticksToLive <= 100) {
+        if (creep.ticksToLive <= 100 && creep.body.length > 3) {
             tryChangeState(creep, STATES.RENEW)
             return
         }
