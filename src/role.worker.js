@@ -110,7 +110,7 @@ function updateWorkerCount(oldState, newState) {
         Memory.workerCount[oldState] -= 1
     }
     if (Memory.workerCount[newState]) {
-        ++Memory.workerCount[newState]
+        Memory.workerCount[newState] += 1
     } else {
         Memory.workerCount[newState] = 1
     }
