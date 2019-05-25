@@ -64,7 +64,7 @@ function dispatch(creep) {
     } else if (creep.memory.state === STATES.RENEW) {
         actions.renew(creep)
     } else {
-        console.log('illegal state, in creep ' + creep.name)
+        console.log(`illegal state: ${creep.memory.state}, in creep ${creep.name}`)
     }
 }
 
@@ -288,7 +288,7 @@ const actions = {
         } else {
             console.info('cannot find a spawn to renew, by ', creep.name)
         }
-    }
+    },
 }
 
 function moveTo(creep, target, stroke = '#ffffff') {

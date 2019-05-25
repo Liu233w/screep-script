@@ -18,7 +18,7 @@ module.exports.loop = function () {
 
     //ensureCreep('upgrader', 1)
     //ensureCreep('harvester', 1)
-    ensureCreep('worker', 6)
+    ensureWorker(6)
 
     const workers = _.filter(Game.creeps, a => a.memory.role === 'worker')
     roleWorker.beforeAll(workers)
@@ -40,13 +40,31 @@ module.exports.loop = function () {
     }
 }
 
-function ensureCreep(role, number) {
-    var list = _.filter(Game.creeps, (creep) => creep.memory.role == role);
+function bodyCost(body) {
+    return body.reduce(function (cost, part) {
+        return cost + BODYPART_COST[part];
+    }, 0);
+}
+
+const WORKER_SPAWN_ORDER = [
+    [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE],
+    [CARRY, WORK, MOVE, CARRY, WORK, MOVE],
+    [WORK, CARRY, MOVE],
+]
+
+function ensureWorker(number) {
+
+    const PRE_ALLOCATED_ENERGY = 0
+
+    const roleName = 'worker'
+    var list = _.filter(Game.creeps, (creep) => creep.memory.role == roleName);
 
     if (list.length < number) {
-        let result = trySpawn(role, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
-        if (result === ERR_NOT_ENOUGH_ENERGY) {
-            result = trySpawn(role, [WORK, CARRY, MOVE])
+        for (let body of WORKER_SPAWN_ORDER) {
+            if (bodyCost(body) + PRE_ALLOCATED_ENERGY <= Game.spawns['Spawn1'].room.energyAvailable) {
+                trySpawn(roleName, body)
+                break
+            }
         }
     }
 
@@ -59,6 +77,15 @@ function ensureCreep(role, number) {
                 align: 'left',
                 opacity: 0.8
             });
+    }
+}
+
+function ensureCreep(role, number) {
+
+    var list = _.filter(Game.creeps, (creep) => creep.memory.role == role);
+
+    if (list.length < number) {
+        trySpawn(role, [WORK, CARRY, MOVE])
     }
 }
 

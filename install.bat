@@ -1,6 +1,3 @@
-npm install -g grunt-cli
-npm install grunt --save-dev
-npm install grunt-screeps
-npm install @types/screeps
-npm install @types/lodash
+start npm install -g grunt-cli
+npm install grunt grunt-screeps @types/screeps @types/lodash
 pause
