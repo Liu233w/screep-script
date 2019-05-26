@@ -98,7 +98,7 @@ function tryChangeState(creep, newState) {
         return
     }
 
-    console.log(`creep ${creep.name} change state from ${oldState} to ${newState}`)
+    // console.log(`creep ${creep.name} change state from ${oldState} to ${newState}`)
 
     // callback functions ...
 
@@ -132,7 +132,7 @@ const actions = {
 
             let best = creep.pos.findClosestByPath(FIND_SOURCES)
             if (best === null) {
-                console.log('cannot find a path to the source, it may due to a jam, in worker.harvest, by ' + creep.name)
+                // console.log('cannot find a path to the source, it may due to a jam, in worker.harvest, by ' + creep.name)
                 best = creep.pos.findClosestByRange(FIND_SOURCES)
             }
 
