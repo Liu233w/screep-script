@@ -5,7 +5,10 @@ module.exports = {
      * @param {Funtion} callBack 
      */
     moveToSpawnAndThen: function (creep, callBack) {
-        const mySpawn = creep.room.find(FIND_MY_SPAWNS)[0]
+        let mySpawn = creep.room.find(FIND_MY_SPAWNS)[0]
+        if (!mySpawn) {
+            mySpawn = Game.spawns['Spawn1']
+        }
         if (mySpawn) {
             if (!creep.pos.inRangeTo(mySpawn, SPAWN_RENEW_RATIO)) {
                 moveTo(creep, mySpawn, "#00ff00")

@@ -51,6 +51,9 @@ function run(creep) {
                         }
                     }
                 }
+            } else {
+                creep.say('💤 idle')
+                moveToSpawnAndThen(creep)
             }
         } else {
             creep.memory.harvest = false

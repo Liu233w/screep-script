@@ -163,6 +163,7 @@ const actions = {
                 result = creep.withdraw(best)
             } else if (best instanceof Creep) {
                 if (creep.pos.isNearTo(best)) {
+                    best.cancelOrder()
                     result = best.transfer(creep, RESOURCE_ENERGY)
                 } else {
                     result = ERR_NOT_IN_RANGE

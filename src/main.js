@@ -87,8 +87,8 @@ function ensureWorker(number) {
         const nonCustomBody = []
         for (let i = 0; i < partUnitNumber; ++i) {
             nonCustomBody.push(WORK)
-            nonCustomBody.push(CARRY)
             nonCustomBody.push(MOVE)
+            nonCustomBody.push(CARRY)
         }
 
         // if non custom body is bigger, use it
