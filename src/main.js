@@ -93,7 +93,7 @@ function ensureWorker(number) {
 
         // if non custom body is bigger, use it
         if (bodyCost(nonCustomBody) > bodyCost(WORKER_SPAWN_ORDER[0])) {
-            trySpawn(roleName, body)
+            trySpawn(roleName, nonCustomBody)
             return
         }
 
@@ -104,7 +104,7 @@ function ensureWorker(number) {
             }
         }
 
-        trySpawn(roleName, body)
+        trySpawn(roleName, nonCustomBody)
     }
 
     const spawning = Game.spawns['Spawn1'].spawning
