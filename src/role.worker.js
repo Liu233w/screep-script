@@ -1,3 +1,20 @@
+const FIND_FILTERS = {
+    transfer: creep => ({
+        filter: (structure) => {
+            return (
+                structure.structureType == STRUCTURE_EXTENSION ||
+                structure.structureType == STRUCTURE_SPAWN ||
+                structure.structureType == STRUCTURE_TOWER
+            ) && structure.energy < structure.energyCapacity
+        }
+    }),
+    repair: creep => ({
+        filter: structure => structure.hits < structure.hitsMax &&
+            !_.includes(Memory.notRepairIds, structure.id) &&
+            !_.find(creep.room.lookForAt(LOOK_FLAGS, structure.pos), flag => flag.color === COLOR_RED)
+    }),
+}
+
 /**
  * 
  * @param {Creep} creep 
@@ -27,24 +44,13 @@ function dispatch(creep) {
                 return
             }
 
-            const toTransfer = creep.room.find(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return (
-                        structure.structureType == STRUCTURE_EXTENSION ||
-                        structure.structureType == STRUCTURE_SPAWN ||
-                        structure.structureType == STRUCTURE_TOWER
-                    ) && structure.energy < structure.energyCapacity
-                }
-            })
+            const toTransfer = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
             if (toTransfer.length * 2 > getWorkerCount(STATES.TRANSFER)) {
                 tryChangeState(creep, STATES.TRANSFER)
                 return
             }
 
-            const toRepair = creep.room.find(FIND_STRUCTURES, {
-                filter: structure => structure.hits < structure.hitsMax &&
-                    !_.includes(Memory.notRepairIds, structure.id)
-            })
+            const toRepair = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
             if (toRepair.length * 2 > getWorkerCount(STATES.REPAIR)) {
                 tryChangeState(creep, STATES.REPAIR)
                 return
@@ -142,13 +148,7 @@ const actions = {
      * @param {Creep} creep 
      */
     transfer(creep) {
-        const target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return (structure.structureType == STRUCTURE_EXTENSION ||
-                    structure.structureType == STRUCTURE_SPAWN ||
-                    structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity
-            }
-        });
+        const target = creep.pos.findClosestByPath(FIND_STRUCTURES, FIND_FILTERS.transfer(creep));
         if (target) {
             creep.say('⚡ transfer')
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
@@ -212,11 +212,7 @@ const actions = {
      * @param {Creep} creep 
      */
     repair(creep) {
-        const target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: structure => structure.hits < structure.hitsMax &&
-                !_.includes(Memory.notRepairIds, structure.id) &&
-                !_.find(creep.room.lookForAt(LOOK_FLAGS, structure.pos), flag => flag.color === COLOR_RED)
-        })
+        const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
         if (target) {
             creep.say('🔨 repair')
             if (creep.repair(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
