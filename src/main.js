@@ -6,6 +6,8 @@ const roleWorker = require('role.worker')
 const roleWarrior = require('role.warrior')
 const roleLongHarvester = require('role.longHarvester')
 
+const runTower = require('run.tower')
+
 const roleToFunc = {
     harvester: roleHarvester.run,
     upgrader: roleUpgrader.run,
@@ -29,9 +31,9 @@ module.exports.loop = function () {
 
     //ensureCreep('upgrader', 1)
     //ensureCreep('harvester', 1)
-    ensureWorker(8)
+    ensureWorker(12)
     //ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
-    ensureCreep('longHarvester', 6, [WORK, CARRY, MOVE, WORK, CARRY, MOVE])
+    ensureCreep('longHarvester', 8, [WORK, CARRY, MOVE, WORK, CARRY, MOVE])
 
     const errors = []
     for (var name in Game.creeps) {
@@ -47,6 +49,12 @@ module.exports.loop = function () {
         } else {
             errors.push(new Error(`undefined role ${creep.memory.role}`))
         }
+    }
+
+    try {
+        runTower.run()
+    } catch (err) {
+        errors.push(err)
     }
 
     if (errors.length > 0) {

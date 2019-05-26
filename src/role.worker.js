@@ -1,19 +1,6 @@
-const FIND_FILTERS = {
-    transfer: creep => ({
-        filter: (structure) => {
-            return (
-                structure.structureType == STRUCTURE_EXTENSION ||
-                structure.structureType == STRUCTURE_SPAWN ||
-                structure.structureType == STRUCTURE_TOWER
-            ) && structure.energy < structure.energyCapacity
-        }
-    }),
-    repair: creep => ({
-        filter: structure => structure.hits < structure.hitsMax &&
-            !_.includes(Memory.notRepairIds, structure.id) &&
-            !_.find(creep.room.lookForAt(LOOK_FLAGS, structure.pos), flag => flag.color === COLOR_RED)
-    }),
-}
+const {
+    FIND_FILTERS
+} = require('lib')
 
 /**
  * 
