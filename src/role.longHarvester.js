@@ -56,7 +56,7 @@ function run(creep) {
 
         const spawn = Game.spawns['Spawn1'];
         if (creep.room !== spawn.room) {
-            creep.moveTo(spawn)
+            moveTo(creep, spawn)
         } else {
 
             let target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
@@ -66,7 +66,8 @@ function run(creep) {
 
             if (!target) {
                 target = creep.pos.findClosestByPath(FIND_CREEPS, {
-                    filter: creep => creep.carry.energy < creep.carryCapacity
+                    filter: creep => creep.carry.energy < creep.carryCapacity &&
+                        creep.memory.role !== 'longHarvester'
                 })
             }
 
