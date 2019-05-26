@@ -79,7 +79,6 @@ function dispatch(creep) {
 }
 
 function destruct(creepMemory) {
-    Memory.workerCount[creepMemory.state] -= 1
 }
 
 /**
@@ -98,30 +97,21 @@ function tryChangeState(creep, newState) {
 
     // callback functions ...
 
-    updateWorkerCount(oldState, newState)
-
     // end callback functions
 
     creep.memory.state = newState
 }
 
-function updateWorkerCount(oldState, newState) {
-    if (oldState) {
-        Memory.workerCount[oldState] -= 1
-    }
-    if (Memory.workerCount[newState]) {
-        Memory.workerCount[newState] += 1
-    } else {
-        Memory.workerCount[newState] = 1
-    }
-}
-
 function getWorkerCount(state) {
-    if (Memory.workerCount) {
-        return Memory.workerCount[state] || 0
-    } else {
-        return 0
+
+    let cnt = 0
+    for (let name in Game.creeps) {
+        const m = Game.creeps[name].memory
+        if (m.role === 'worker' && m.state === state) {
+            cnt += 1
+        }
     }
+    return cnt
 }
 
 const actions = {
