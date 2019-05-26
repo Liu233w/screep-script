@@ -21,4 +21,13 @@ module.exports = {
             console.info('cannot find a spawn, by ', creep.name)
         }
     },
+    moveTo,
+}
+
+function moveTo(creep, target, stroke = '#ffffff') {
+    return creep.moveTo(target, {
+        visualizePathStyle: {
+            stroke,
+        }
+    })
 }

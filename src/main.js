@@ -31,9 +31,9 @@ module.exports.loop = function () {
     //ensureCreep('harvester', 1)
     ensureWorker(8)
     //ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
-    ensureCreep('longHarvester', 3, [WORK, CARRY, MOVE, WORK, CARRY, MOVE])
+    ensureCreep('longHarvester', 4, [WORK, CARRY, MOVE, WORK, CARRY, MOVE])
 
-    let haveError = false
+    const errors = []
     for (var name in Game.creeps) {
         var creep = Game.creeps[name];
 
@@ -42,17 +42,21 @@ module.exports.loop = function () {
             try {
                 func(creep)
             } catch (err) {
-                haveError = true
-                logError(err)
+                errors.push(err)
             }
         } else {
-            haveError = true
-            logError(new Error(`undefined role ${creep.memory.role}`))
+            errors.push(new Error(`undefined role ${creep.memory.role}`))
         }
     }
 
-    if (haveError) {
-        throw new Error('have error when executing')
+    if (errors.length > 0) {
+        throw new Error(`have error when executing ${(()=>{
+            let str =''
+            for (let err of errors) {
+                str += '\n' + err.message + '\n' + err.stack
+            }
+            return str
+        })()}`)
     }
 }
 
