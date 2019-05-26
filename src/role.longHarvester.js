@@ -33,7 +33,18 @@ function run(creep) {
                 if (flag.pos.roomName !== creep.pos.roomName) {
                     moveTo(creep, flag, '#ffaa00')
                 } else {
-                    const source = creep.room.find(FIND_SOURCES)[0]
+
+                    if (Memory.messageToSign && Memory.messageToSign[creep.room.controller.id]) {
+                        const result = creep.signController(creep.room.controller, Memory.messageToSign[creep.room.controller.id])
+                        if (result === ERR_NOT_IN_RANGE) {
+                            moveTo(creep, creep.room.controller)
+                            return
+                        } else if (result === OK) {
+                            delete Memory.messageToSign[creep.room.controller.id]
+                        }
+                    }
+
+                    const source = creep.pos.findClosestByPath(FIND_SOURCES)
                     if (source) {
                         if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
                             moveTo(creep, source, '#ffaa00')

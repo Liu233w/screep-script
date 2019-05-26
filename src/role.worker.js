@@ -199,6 +199,14 @@ const actions = {
      */
     upgrade(creep) {
         creep.say('✨ upgrade')
+        if (Memory.messageToSign && Memory.messageToSign[creep.room.controller.id]) {
+            const result = creep.signController(creep.room.controller, Memory.messageToSign[creep.room.controller.id])
+            if (result === ERR_NOT_IN_RANGE) {
+                moveTo(creep, creep.room.controller)
+            } else if (result === OK) {
+                delete Memory.messageToSign[creep.room.controller.id]
+            }
+        }
         if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
             moveTo(creep, creep.room.controller)
         }
