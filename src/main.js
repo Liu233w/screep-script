@@ -5,6 +5,14 @@ var roleBuilder = require('role.builder');
 const roleWorker = require('role.worker')
 const roleWarrior = require('role.warrior')
 
+const roleToFunc = {
+    harvester: roleHarvester.run,
+    upgrader: roleUpgrader.run,
+    builder: roleBuilder.run,
+    worker: roleWorker.run,
+    warrior: roleWarrior.run,
+}
+
 module.exports.loop = function () {
 
     for (var name in Memory.creeps) {
@@ -22,24 +30,31 @@ module.exports.loop = function () {
     ensureWorker(8)
     ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
 
+    let haveError = false
     for (var name in Game.creeps) {
         var creep = Game.creeps[name];
-        if (creep.memory.role == 'harvester') {
-            roleHarvester.run(creep);
-        }
-        if (creep.memory.role == 'upgrader') {
-            roleUpgrader.run(creep);
-        }
-        if (creep.memory.role == 'builder') {
-            roleBuilder.run(creep);
-        }
-        if (creep.memory.role === 'worker') {
-            roleWorker.run(creep)
-        }
-        if (creep.memory.role === 'warrior') {
-            roleWarrior.run(creep)
+
+        const func = roleToFunc[creep.memory.role]
+        if (func) {
+            try {
+                func(creep)
+            } catch (err) {
+                haveError = true
+                logError(err)
+            }
+        } else {
+            haveError = true
+            logError(new Error(`undefined role ${creep.memory.role}`))
         }
     }
+
+    if (haveError) {
+        throw new Error('have error when executing')
+    }
+}
+
+function logError(err) {
+    console.log(err.message, err.stack)
 }
 
 function bodyCost(body) {
