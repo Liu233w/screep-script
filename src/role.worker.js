@@ -42,7 +42,8 @@ function dispatch(creep) {
             }
 
             const toRepair = creep.room.find(FIND_STRUCTURES, {
-                filter: structure => structure.hits < structure.hitsMax
+                filter: structure => structure.hits < structure.hitsMax &&
+                    !_.includes(Memory.notRepairIds, structure.id)
             })
             if (toRepair.length * 2 > getWorkerCount(STATES.REPAIR)) {
                 tryChangeState(creep, STATES.REPAIR)
@@ -222,9 +223,9 @@ const actions = {
      * @param {Creep} creep 
      */
     repair(creep) {
-
         const target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: structure => structure.hits < structure.hitsMax
+            filter: structure => structure.hits < structure.hitsMax &&
+                !_.includes(Memory.notRepairIds, structure.id)
         })
         if (target) {
             creep.say('🔨 repair')

@@ -18,7 +18,7 @@ module.exports.loop = function () {
 
     //ensureCreep('upgrader', 1)
     //ensureCreep('harvester', 1)
-    ensureWorker(6)
+    ensureWorker(8)
 
     for (var name in Game.creeps) {
         var creep = Game.creeps[name];
