@@ -58,15 +58,24 @@ function run(creep) {
         if (creep.room !== spawn.room) {
             creep.moveTo(spawn)
         } else {
-            const target = creep.pos.findClosestByPath(FIND_CREEPS, {
-                filter: creep => creep.carry.energy < creep.carryCapacity
+
+            let target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+                filter: s => s.structureType === STRUCTURE_CONTAINER &&
+                    _.sum(s.store) < s.storeCapacity
             })
+
+            if (!target) {
+                target = creep.pos.findClosestByPath(FIND_CREEPS, {
+                    filter: creep => creep.carry.energy < creep.carryCapacity
+                })
+            }
+
             if (target) {
                 if (creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                     moveTo(creep, target)
                 }
             } else {
-                console.log(`cannot find a creep to transfer energy, by ${creep.name}`)
+                console.log(`cannot find a target to transfer energy, by ${creep.name}`)
             }
         }
     }

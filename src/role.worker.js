@@ -130,13 +130,45 @@ const actions = {
 
             creep.say('🔄 harvest')
 
-            let best = creep.pos.findClosestByPath(FIND_SOURCES)
+            const sourceList = [
+                ...creep.room.find(FIND_SOURCES),
+                ...creep.room.find(FIND_DROPPED_RESOURCES, {
+                    filter: s => s.resourceType === RESOURCE_ENERGY
+                }),
+                ...creep.room.find(FIND_TOMBSTONES, {
+                    filter: s => s.store.energy > 0
+                }),
+                ...creep.room.find(FIND_STRUCTURES, {
+                    filter: s => s.structureType === STRUCTURE_CONTAINER
+                }),
+                ...creep.room.find(FIND_CREEPS, {
+                    filter: s => s.memory.role === 'longHarvester' &&
+                        s.carry.energy > 0
+                }),
+            ]
+
+            let best = creep.pos.findClosestByPath(sourceList)
             if (best === null) {
                 // console.log('cannot find a path to the source, it may due to a jam, in worker.harvest, by ' + creep.name)
-                best = creep.pos.findClosestByRange(FIND_SOURCES)
+                best = creep.pos.findClosestByRange(sourceList)
             }
 
-            if (creep.harvest(best) == ERR_NOT_IN_RANGE) {
+            let result
+            if (best instanceof Source) {
+                result = creep.harvest(best)
+            } else if (best instanceof Resource) {
+                result = creep.pickup(best)
+            } else if (best instanceof Tombstone || best instanceof Structure) {
+                result = creep.withdraw(best)
+            } else if (best instanceof Creep) {
+                if (creep.pos.isNearTo(best)) {
+                    result = creep.withdraw(best, RESOURCE_ENERGY)
+                } else {
+                    result = ERR_NOT_IN_RANGE
+                }
+            }
+
+            if (result == ERR_NOT_IN_RANGE) {
                 moveTo(creep, best, '#ffaa00')
             }
         } else {
