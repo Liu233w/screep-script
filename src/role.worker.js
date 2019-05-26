@@ -78,8 +78,7 @@ function dispatch(creep) {
     }
 }
 
-function destruct(creepMemory) {
-}
+function destruct(creepMemory) {}
 
 /**
  *  
@@ -215,7 +214,8 @@ const actions = {
     repair(creep) {
         const target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: structure => structure.hits < structure.hitsMax &&
-                !_.includes(Memory.notRepairIds, structure.id)
+                !_.includes(Memory.notRepairIds, structure.id) &&
+                !_.find(creep.room.lookForAt(LOOK_FLAGS, structure.pos), flag => flag.color === COLOR_RED)
         })
         if (target) {
             creep.say('🔨 repair')

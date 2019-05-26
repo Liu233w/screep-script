@@ -3,6 +3,7 @@ var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
 
 const roleWorker = require('role.worker')
+const roleWarrior = require('role.warrior')
 
 module.exports.loop = function () {
 
@@ -19,6 +20,7 @@ module.exports.loop = function () {
     //ensureCreep('upgrader', 1)
     //ensureCreep('harvester', 1)
     ensureWorker(8)
+    ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
 
     for (var name in Game.creeps) {
         var creep = Game.creeps[name];
@@ -33,6 +35,9 @@ module.exports.loop = function () {
         }
         if (creep.memory.role === 'worker') {
             roleWorker.run(creep)
+        }
+        if (creep.memory.role === 'warrior') {
+            roleWarrior.run(creep)
         }
     }
 }
@@ -77,12 +82,12 @@ function ensureWorker(number) {
     }
 }
 
-function ensureCreep(role, number) {
+function ensureCreep(role, number, body = [WORK, CARRY, MOVE]) {
 
     var list = _.filter(Game.creeps, (creep) => creep.memory.role == role);
 
     if (list.length < number) {
-        trySpawn(role, [WORK, CARRY, MOVE])
+        trySpawn(role, body)
     }
 }
 
