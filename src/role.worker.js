@@ -171,6 +171,8 @@ const actions = {
 
             if (result == ERR_NOT_IN_RANGE) {
                 moveTo(creep, best, '#ffaa00')
+            } else if (result !== OK) {
+                console.log(`harvest error: ${result}, by ${creep.name}`)
             }
         } else {
             tryChangeState(creep, STATES.IDLE)
