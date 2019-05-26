@@ -41,6 +41,14 @@ function dispatch(creep) {
                 return
             }
 
+            const toRepair = creep.room.find(FIND_STRUCTURES, {
+                filter: structure => structure.hits < structure.hitsMax
+            })
+            if (toRepair.length * 2 > getWorkerCount(STATES.REPAIR)) {
+                tryChangeState(creep, STATES.REPAIR)
+                return
+            }
+
             const toBuild = creep.room.find(FIND_CONSTRUCTION_SITES)
             if (toBuild.length * 2 > getWorkerCount(STATES.BUILD)) {
                 tryChangeState(creep, STATES.BUILD)
@@ -62,6 +70,8 @@ function dispatch(creep) {
         actions.build(creep)
     } else if (creep.memory.state === STATES.RENEW) {
         actions.renew(creep)
+    } else if (creep.memory.state === STATES.REPAIR) {
+        actions.repair(creep)
     } else {
         console.log(`illegal state: ${creep.memory.state}, in creep ${creep.name}`)
     }
@@ -151,7 +161,7 @@ const actions = {
         });
         if (target) {
             creep.say('⚡ transfer')
-            if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
         } else {
@@ -176,7 +186,7 @@ const actions = {
         const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
         if (target) {
             creep.say('🚧 build')
-            if (creep.build(target) == ERR_NOT_IN_RANGE) {
+            if (creep.build(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
         } else {
@@ -207,6 +217,24 @@ const actions = {
             console.info('cannot find a spawn to renew, by ', creep.name)
         }
     },
+    /**
+     * 
+     * @param {Creep} creep 
+     */
+    repair(creep) {
+
+        const target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: structure => structure.hits < structure.hitsMax
+        })
+        if (target) {
+            creep.say('🔨 repair')
+            if (creep.repair(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
+                moveTo(creep, target)
+            }
+        } else {
+            tryChangeState(creep, STATES.IDLE)
+        }
+    }
 }
 
 function moveTo(creep, target, stroke = '#ffffff') {
@@ -217,6 +245,15 @@ function moveTo(creep, target, stroke = '#ffffff') {
     })
 }
 
+/**
+ * 
+ * @param {Creep} creep 
+ */
+function adjecentSource(creep) {
+    const sources = creep.room.find(FIND_SOURCES)
+    return _.find(sources, item => creep.pos.isNearTo(item))
+}
+
 const STATES = {
     IDLE: 'idle',
     HARVEST: 'harvest',
@@ -224,6 +261,7 @@ const STATES = {
     UPGRADE: 'upgrade',
     TRANSFER: 'transfer',
     RENEW: 'renew',
+    REPAIR: 'repair',
 }
 
 module.exports.run = dispatch
