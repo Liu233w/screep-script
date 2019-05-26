@@ -67,7 +67,7 @@ function run(creep) {
             if (!target) {
                 target = creep.pos.findClosestByPath(FIND_CREEPS, {
                     filter: creep => creep.carry.energy < creep.carryCapacity &&
-                        creep.memory.role !== 'longHarvester'
+                        creep.memory.role === 'worker'
                 })
             }
 
