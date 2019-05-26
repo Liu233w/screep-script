@@ -36,35 +36,6 @@ function dispatch(creep) {
             tryChangeState(creep, STATES.HARVEST)
             return
         }
-
-        if (creep.memory.state === STATES.IDLE) {
-
-            if (getWorkerCount(STATES.UPGRADE) < 1) {
-                tryChangeState(creep, STATES.UPGRADE)
-                return
-            }
-
-            const toTransfer = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
-            if (toTransfer.length * 2 > getWorkerCount(STATES.TRANSFER)) {
-                tryChangeState(creep, STATES.TRANSFER)
-                return
-            }
-
-            const toRepair = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
-            if (toRepair.length * 2 > getWorkerCount(STATES.REPAIR)) {
-                tryChangeState(creep, STATES.REPAIR)
-                return
-            }
-
-            const toBuild = creep.room.find(FIND_CONSTRUCTION_SITES)
-            if (toBuild.length * 2 > getWorkerCount(STATES.BUILD)) {
-                tryChangeState(creep, STATES.BUILD)
-                return
-            }
-
-            tryChangeState(creep, STATES.UPGRADE)
-            return
-        }
     })()
 
     if (creep.memory.state === STATES.HARVEST) {
@@ -105,6 +76,39 @@ function tryChangeState(creep, newState) {
     // end callback functions
 
     creep.memory.state = newState
+
+    if (newState === STATES.IDLE) {
+        // arrange a new job
+        arrange(creep)
+    }
+}
+
+function arrange(creep) {
+    if (getWorkerCount(STATES.UPGRADE) < 1) {
+        tryChangeState(creep, STATES.UPGRADE)
+        return
+    }
+
+    const toTransfer = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
+    if (toTransfer.length * 2 > getWorkerCount(STATES.TRANSFER)) {
+        tryChangeState(creep, STATES.TRANSFER)
+        return
+    }
+
+    const toRepair = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
+    if (toRepair.length * 2 > getWorkerCount(STATES.REPAIR)) {
+        tryChangeState(creep, STATES.REPAIR)
+        return
+    }
+
+    const toBuild = creep.room.find(FIND_CONSTRUCTION_SITES)
+    if (toBuild.length * 2 > getWorkerCount(STATES.BUILD)) {
+        tryChangeState(creep, STATES.BUILD)
+        return
+    }
+
+    tryChangeState(creep, STATES.UPGRADE)
+    return
 }
 
 function getWorkerCount(state) {

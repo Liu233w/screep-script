@@ -25,7 +25,7 @@ function run(creep) {
     if (creep.memory.harvest) {
         if (creep.carry.energy < creep.carryCapacity) {
 
-            creep.say('🔄 harvest')
+            creep.say('🔄 harvest(long)')
 
             const flag = _.filter(Game.flags, a => a.color === COLOR_PURPLE)[0]
             if (flag) {
@@ -66,7 +66,7 @@ function run(creep) {
             return
         }
 
-        creep.say('⚡ transfer')
+        creep.say('🔋 store')
 
         const spawn = Game.spawns['Spawn1'];
         if (creep.room !== spawn.room) {
