@@ -12,7 +12,16 @@ function run(creep) {
             creep.memory.renewing = false
         } else {
             moveToSpawnAndThen(creep, spawn => spawn.renewCreep(creep))
+            return
         }
+    }
+
+    const enemy = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
+    if (enemy) {
+        if (creep.attack(enemy) === ERR_NOT_IN_RANGE) {
+            creep.moveTo(enemy.pos)
+        }
+        return
     }
 
     const flag = creep.pos.findClosestByPath(FIND_FLAGS, {
@@ -28,10 +37,11 @@ function run(creep) {
             if (creep.attack(targets[0]) === ERR_NOT_IN_RANGE) {
                 moveTo(creep, targets[0])
             }
+            return
         }
-    } else {
-        moveToSpawnAndThen(creep)
     }
+
+    moveToSpawnAndThen(creep)
 }
 
 function moveTo(creep, target, stroke = '#ff0000') {
