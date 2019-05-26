@@ -4,6 +4,7 @@ var roleBuilder = require('role.builder');
 
 const roleWorker = require('role.worker')
 const roleWarrior = require('role.warrior')
+const roleLongHarvester = require('role.longHarvester')
 
 const roleToFunc = {
     harvester: roleHarvester.run,
@@ -11,6 +12,7 @@ const roleToFunc = {
     builder: roleBuilder.run,
     worker: roleWorker.run,
     warrior: roleWarrior.run,
+    longHarvester: roleLongHarvester.run,
 }
 
 module.exports.loop = function () {
@@ -29,6 +31,7 @@ module.exports.loop = function () {
     //ensureCreep('harvester', 1)
     ensureWorker(8)
     ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
+    ensureCreep('longHarvester', 1, [WORK, CARRY, MOVE, WORK, CARRY, MOVE])
 
     let haveError = false
     for (var name in Game.creeps) {
