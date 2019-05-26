@@ -139,7 +139,8 @@ const actions = {
                     filter: s => s.store.energy > 0
                 }),
                 ...creep.room.find(FIND_STRUCTURES, {
-                    filter: s => s.structureType === STRUCTURE_CONTAINER
+                    filter: s => s.structureType === STRUCTURE_CONTAINER &&
+                        s.store.energy > 0
                 }),
                 ...creep.room.find(FIND_CREEPS, {
                     filter: s => s.memory.role === 'longHarvester' &&
