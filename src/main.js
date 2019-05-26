@@ -31,7 +31,7 @@ module.exports.loop = function () {
     //ensureCreep('harvester', 1)
     ensureWorker(8)
     //ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
-    ensureCreep('longHarvester', 4, [WORK, CARRY, MOVE, WORK, CARRY, MOVE])
+    ensureCreep('longHarvester', 6, [WORK, CARRY, MOVE, WORK, CARRY, MOVE])
 
     const errors = []
     for (var name in Game.creeps) {

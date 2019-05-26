@@ -164,7 +164,7 @@ const actions = {
             } else if (best instanceof Resource) {
                 result = creep.pickup(best)
             } else if (best instanceof Tombstone || best instanceof Structure) {
-                result = creep.withdraw(best)
+                result = creep.withdraw(best, RESOURCE_ENERGY)
             } else if (best instanceof Creep) {
                 if (creep.pos.isNearTo(best)) {
                     best.cancelOrder()
@@ -237,7 +237,7 @@ const actions = {
      */
     renew(creep) {
 
-        if (creep.ticksToLive >= 1400) {
+        if (creep.ticksToLive >= 1500) {
             tryChangeState(creep, STATES.IDLE)
             return
         }

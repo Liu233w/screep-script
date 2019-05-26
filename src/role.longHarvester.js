@@ -10,11 +10,11 @@ const sourceId = '5bbcae409099fc012e638a5e'
  */
 function run(creep) {
 
-    if (creep.ticksToLive <= 100 || creep.memory.renewing) {
+    if (creep.ticksToLive <= 200 || creep.memory.renewing) {
         creep.say('🔁 renew')
         creep.memory.renewing = true
 
-        if (creep.ticksToLive >= 1400) {
+        if (creep.ticksToLive >= 1500) {
             creep.memory.renewing = false
         } else {
             moveToSpawnAndThen(creep, spawn => spawn.renewCreep(creep))
