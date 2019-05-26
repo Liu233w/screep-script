@@ -14,7 +14,7 @@ function run(creep) {
         creep.say('🔁 renew')
         creep.memory.renewing = true
 
-        if (creep.ticksToLive >= 1500) {
+        if (creep.ticksToLive >= 1400) {
             creep.memory.renewing = false
         } else {
             moveToSpawnAndThen(creep, spawn => spawn.renewCreep(creep))

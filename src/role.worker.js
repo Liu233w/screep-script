@@ -237,7 +237,7 @@ const actions = {
      */
     renew(creep) {
 
-        if (creep.ticksToLive >= 1500) {
+        if (creep.ticksToLive >= 1400) {
             tryChangeState(creep, STATES.IDLE)
             return
         }
