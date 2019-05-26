@@ -1,8 +1,3 @@
-function beforeAll(creeps) {
-
-    Memory.sourceWorkerCount = _.countBy(creeps, 'memory.source')
-}
-
 /**
  * 
  * @param {Creep} creep 
@@ -41,13 +36,13 @@ function dispatch(creep) {
                     ) && structure.energy < structure.energyCapacity
                 }
             })
-            if (toTransfer.length > getWorkerCount(STATES.TRANSFER)) {
+            if (toTransfer.length * 2 > getWorkerCount(STATES.TRANSFER)) {
                 tryChangeState(creep, STATES.TRANSFER)
                 return
             }
 
             const toBuild = creep.room.find(FIND_CONSTRUCTION_SITES)
-            if (toBuild.length > getWorkerCount(STATES.BUILD)) {
+            if (toBuild.length * 2 > getWorkerCount(STATES.BUILD)) {
                 tryChangeState(creep, STATES.BUILD)
                 return
             }
@@ -73,9 +68,6 @@ function dispatch(creep) {
 }
 
 function destruct(creepMemory) {
-    if (creepMemory.state === STATES.HARVEST) {
-        const id = creepMemory.source
-    }
     Memory.workerCount[creepMemory.state] -= 1
 }
 
@@ -96,17 +88,10 @@ function tryChangeState(creep, newState) {
     // callback functions ...
 
     updateWorkerCount(oldState, newState)
-    resetSource(oldState, creep)
 
     // end callback functions
 
     creep.memory.state = newState
-}
-
-function resetSource(oldState, creep) {
-    if (oldState === STATES.HARVEST) {
-        delete creep.memory.source
-    }
 }
 
 function updateWorkerCount(oldState, newState) {
@@ -128,42 +113,6 @@ function getWorkerCount(state) {
     }
 }
 
-const SOURCE_CAPASICITY = {
-    '5bbcae329099fc012e6388dc': 3,
-    '5bbcae329099fc012e6388da': 1,
-}
-const DEFAULT_SOURCE_CAPASICITY = 2
-
-/**
- * key: source id; value: available position for harvest
- * @param {Object} sources 
- */
-function resolveSourceAvailable(sources) {
-    const res = {}
-    for (let item of sources) {
-        const id = item.id
-        if (!Memory.sourceWorkerCount[id]) {
-            Memory.sourceWorkerCount[id] = 0
-        }
-        res[id] = (SOURCE_CAPASICITY[id] || DEFAULT_SOURCE_CAPASICITY) - Memory.sourceWorkerCount[id]
-    }
-    return res
-}
-
-function maxValue(obj) {
-    let max = -Infinity
-    for (let key in obj) {
-        const item = obj[key]
-        if (item > max) {
-            max = item
-        }
-    }
-    return max
-}
-
-// change to another source if meet a jam
-const CHANGE_SOURCE_THRESHHOLD = 3
-
 const actions = {
 
     /**
@@ -175,49 +124,14 @@ const actions = {
 
             creep.say('🔄 harvest')
 
-            const currentSource = creep.memory.source
-            const sources = creep.room.find(FIND_SOURCES)
-            const sourceAvailables = resolveSourceAvailable(sources)
-
-            if (!currentSource || sourceAvailables[currentSource] <= maxValue(sourceAvailables) - CHANGE_SOURCE_THRESHHOLD) {
-
-                let biggest = -Infinity
-                let bestSources = []
-
-                let available = []
-
-                for (let id in sourceAvailables) {
-                    const sourceAvailable = sourceAvailables[id]
-                    if (sourceAvailable > 0) {
-                        available.push(id)
-                    }
-
-                    if (sourceAvailable === biggest) {
-                        bestSources.push(id)
-                    } else if (sourceAvailable > biggest) {
-                        biggest = sourceAvailable
-                        bestSources = [id]
-                    }
-                }
-
-                const best = creep.pos.findClosestByPath(FIND_SOURCES, {
-                    filter: source => available.includes(source.id) || bestSources.includes(source.id)
-                })
-
-                let bestId
-                if (best === null) {
-                    console.log('cannot find a path to the source, it may due to a jam, in worker.harvest, by ' + creep.name)
-                    bestId = creep.pos.findClosestByRange(FIND_SOURCES).id
-                } else {
-                    bestId = best.id
-                }
-
-                creep.memory.source = bestId
+            let best = creep.pos.findClosestByPath(FIND_SOURCES)
+            if (best === null) {
+                console.log('cannot find a path to the source, it may due to a jam, in worker.harvest, by ' + creep.name)
+                best = creep.pos.findClosestByRange(FIND_SOURCES)
             }
 
-            const source = Game.getObjectById(creep.memory.source)
-            if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                moveTo(creep, source, '#ffaa00')
+            if (creep.harvest(best) == ERR_NOT_IN_RANGE) {
+                moveTo(creep, best, '#ffaa00')
             }
         } else {
             tryChangeState(creep, STATES.IDLE)
@@ -259,7 +173,7 @@ const actions = {
      * @param {Creep} creep 
      */
     build(creep) {
-        const target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES)
+        const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
         if (target) {
             creep.say('🚧 build')
             if (creep.build(target) == ERR_NOT_IN_RANGE) {
@@ -314,4 +228,3 @@ const STATES = {
 
 module.exports.run = dispatch
 module.exports.destruct = destruct
-module.exports.beforeAll = beforeAll

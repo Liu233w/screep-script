@@ -20,9 +20,6 @@ module.exports.loop = function () {
     //ensureCreep('harvester', 1)
     ensureWorker(6)
 
-    const workers = _.filter(Game.creeps, a => a.memory.role === 'worker')
-    roleWorker.beforeAll(workers)
-
     for (var name in Game.creeps) {
         var creep = Game.creeps[name];
         if (creep.memory.role == 'harvester') {
