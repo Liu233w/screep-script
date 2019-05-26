@@ -65,8 +65,6 @@ function bodyCost(body) {
 
 const WORKER_SPAWN_ORDER = [
     [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE],
-    [CARRY, WORK, MOVE, CARRY, WORK, MOVE],
-    [WORK, CARRY, MOVE],
 ]
 
 function ensureWorker(number) {
@@ -77,12 +75,33 @@ function ensureWorker(number) {
     var list = _.filter(Game.creeps, (creep) => creep.memory.role == roleName);
 
     if (list.length < number) {
+
+        const energy = Game.spawns['Spawn1'].room.energyAvailable - PRE_ALLOCATED_ENERGY
+
+        // non custom body layout
+        const partEnergy = BODYPART_COST.carry + BODYPART_COST.move + BODYPART_COST.work
+        const partUnitNumber = Math.floor(energy / partEnergy)
+        const nonCustomBody = []
+        for (let i = 0; i < partUnitNumber; ++i) {
+            nonCustomBody.push(WORK)
+            nonCustomBody.push(CARRY)
+            nonCustomBody.push(MOVE)
+        }
+
+        // if non custom body is bigger, use it
+        if (bodyCost(nonCustomBody) > bodyCost(WORKER_SPAWN_ORDER[0])) {
+            trySpawn(roleName, body)
+            return
+        }
+
         for (let body of WORKER_SPAWN_ORDER) {
-            if (bodyCost(body) + PRE_ALLOCATED_ENERGY <= Game.spawns['Spawn1'].room.energyAvailable) {
+            if (bodyCost(body) <= energy) {
                 trySpawn(roleName, body)
-                break
+                return
             }
         }
+
+        trySpawn(roleName, body)
     }
 
     const spawning = Game.spawns['Spawn1'].spawning
