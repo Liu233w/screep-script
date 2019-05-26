@@ -79,10 +79,15 @@ function run(creep) {
             })
 
             if (!target) {
-                target = creep.pos.findClosestByPath(FIND_CREEPS, {
+                const targets = creep.room.find(FIND_CREEPS, {
                     filter: creep => creep.carry.energy < creep.carryCapacity &&
                         creep.memory.role === 'worker'
                 })
+                // harvesting worker has higher priority
+                target = creep.pos.findClosestByPath(targets, t => t.memory.state === 'harvest')
+                if (!target) {
+                    target = creep.pos.findClosestByPath(targets)
+                }
             }
 
             if (target) {
