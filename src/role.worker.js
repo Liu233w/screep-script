@@ -17,21 +17,28 @@ const spawnStrategy = {
     // TODO: min body repeat number to renew
 }
 
+/**
+ * 
+ * @param {Creep} creep 
+ */
 function arrange(creep) {
 
-    if (getWorkerCount(STATES.UPGRADE) < 1) {
+    if (getWorkerCount(creep.room, STATES.UPGRADE) < 1) {
         return STATES.UPGRADE
     }
 
+    const toTransfer = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
     /**
      * @type {StructureExtension[]}
      */
-    const toTransfer = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
     const transferEnergy = _.reduce(toTransfer, (sum, curr) => sum + (curr.energyCapacity - curr.energy), 0)
     const transferNumber = Math.min(Math.ceil(transferEnergy / 100), toTransfer.length)
-    console.log(`energy wait to transfer: ${transferEnergy}, transferer number: ${transferNumber}`)
-    if (transferNumber > getWorkerCount(STATES.TRANSFER)) {
-        return STATES.TRANSFER
+    const carrierCount = getRoleCount(creep.room, 'carrier')
+    if (transferNumber > carrierCount) {
+        if (transferNumber > getWorkerCount(creep.room, STATES.TRANSFER)) {
+            console.log(`doing carrier's job, need transfer count ${transferNumber}`)
+            return STATES.TRANSFER
+        }
     }
 
     const toRepair = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
@@ -42,7 +49,7 @@ function arrange(creep) {
         }).length <= 0) {
         repairNumber *= 2
     }
-    if (repairNumber > getWorkerCount(STATES.REPAIR)) {
+    if (repairNumber > getWorkerCount(creep.room, STATES.REPAIR)) {
         return STATES.REPAIR
     }
 
@@ -50,23 +57,24 @@ function arrange(creep) {
     const waitProgress = _.reduce(toBuild, (sum, curr) => sum + (curr.progressTotal - curr.progress), 0)
     const buildNumber = Math.ceil(waitProgress / 5000)
     console.log(`progress wait to build: ${waitProgress}, builder number: ${buildNumber}`)
-    if (buildNumber > getWorkerCount(STATES.BUILD)) {
-        return creep, STATES.BUILD
+    if (buildNumber > getWorkerCount(creep.room, STATES.BUILD)) {
+        return STATES.BUILD
     }
 
     return STATES.UPGRADE
 }
 
-function getWorkerCount(state) {
+/**
+ * 
+ * @param {Room} room 
+ * @param {String} state 
+ */
+function getWorkerCount(room, state) {
+    return stateMachine.getStateCount(room.name, 'worker', state)
+}
 
-    let cnt = 0
-    for (let name in Game.creeps) {
-        const m = Game.creeps[name].memory
-        if (m.role === 'worker' && m.state === state) {
-            cnt += 1
-        }
-    }
-    return cnt
+function getRoleCount(room, role) {
+    return stateMachine.getRoleCount(room.name, role)
 }
 
 module.exports = {

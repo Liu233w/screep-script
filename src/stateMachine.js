@@ -9,7 +9,7 @@ const {
 const STATES = {
     IDLE: 'idle',
     HARVEST: 'harvest', // obsoleted
-    CARRY: 'carry',
+    TAKE: 'take',
     BUILD: 'build',
     UPGRADE: 'upgrade',
     TRANSFER: 'transfer',
@@ -38,13 +38,13 @@ const ACTIONS = {
      * @param {Creep} creep 
      */
     [STATES.HARVEST](creep) {
-        tryChangeState(creep, STATES.CARRY)
+        tryChangeState(creep, STATES.TAKE)
     },
     /**
      * 
      * @param {Creep} creep 
      */
-    [STATES.CARRY](creep) {
+    [STATES.TAKE](creep) {
         if (creep.carry.energy < creep.carryCapacity) {
 
             creep.say('💡')
@@ -182,7 +182,7 @@ function dispatch(creep, arrangeFunc) {
             return
         }
         if (creep.carry.energy === 0) {
-            tryChangeState(creep, STATES.HARVEST)
+            tryChangeState(creep, STATES.TAKE)
             return
         }
     })()
@@ -191,17 +191,18 @@ function dispatch(creep, arrangeFunc) {
         tryChangeState(creep, STATES.IDLE)
     }
 
-    const state = creep.memory.state
-
-    if (state === STATES.IDLE) {
+    if (creep.memory.state === STATES.IDLE) {
         tryChangeState(creep, arrangeFunc(creep))
     }
 
-    const actionFunc = ACTIONS[state]
+    const actionFunc = ACTIONS[creep.memory.state]
     if (!actionFunc) {
-        throw new Error(`illegal state: ${state}, in creep ${creep.name}`)
+        console.log(`illegal state: ${creep.memory.state}, in creep ${creep.name}, change to IDLE`)
+        tryChangeState(creep, STATES.IDLE)
+        return
     }
 
+    console.log(`executing action ${creep.memory.state}, by ${creep.name}`)
     actionFunc(creep)
 
     if (creep.memory.state === STATES.IDLE) {
@@ -231,8 +232,26 @@ function tryChangeState(creep, newState) {
     creep.memory.state = newState
 }
 
+function global() {
+    const creepStates = _.countBy(Game.creeps, c => `${c.room.name}.${c.memory.role}.${c.memory.state}`)
+    const creepRoles = _.countBy(Game.creeps, c => `${c.room.name}.${c.memory.role}`)
+    Memory.creepStates = creepStates
+    Memory.creepRoles = creepRoles
+}
+
+function getStateCount(roomName, role, state) {
+    return Memory.creepStates[`${roomName}.${role}.${state}`]
+}
+
+function getRoleCount(roomName, role) {
+    return Memory.creepRoles[`${roomName}.${role}`]
+}
+
 module.exports = {
     STATES,
     dispatch,
     ACTIONS,
+    global,
+    getStateCount,
+    getRoleCount,
 }

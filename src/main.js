@@ -5,6 +5,8 @@ const {
 
 const utils = require('./utils')
 
+const stateMachine = require('./stateMachine')
+
 var roleHarvester = require('./role.harvester')
 var roleUpgrader = require('./role.upgrader')
 var roleBuilder = require('./role.builder')
@@ -22,6 +24,7 @@ const roleToFunc = {
     worker: roleWorker.run,
     warrior: roleWarrior.run,
     longHarvester: roleLongHarvester.run,
+    carrier: require('./role.carrier').run,
 }
 
 module.exports.loop = function () {
@@ -36,9 +39,16 @@ module.exports.loop = function () {
     }
 
     try {
+        stateMachine.global()
+    } catch (err) {
+        errors.push(err)
+    }
+
+    try {
         //ensureCreep('upgrader', 1)
         ensureCreep('harvester', 5, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
-        ensureCreep('worker', 6, [WORK, CARRY, MOVE])
+        ensureCreep('worker', 4, [WORK, CARRY, MOVE])
+        ensureCreep('carrier', 4, [CARRY, CARRY, MOVE])
         if (Game.spawns['Spawn1'].room.find(FIND_HOSTILE_CREEPS).length > 0) {
             console.log('hostile creep in room')
             ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
