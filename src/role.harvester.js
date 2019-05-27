@@ -51,6 +51,7 @@ function run(creep) {
         let target = creep.pos.findClosestByRange(workers, t => t.memory.state === 'harvest')
 
         if (!target) {
+            console.log(`try find nearest available container, by ${creep.name}`)
             target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: s => s.structureType === STRUCTURE_CONTAINER &&
                     _.sum(s.store) < s.storeCapacity
@@ -58,10 +59,12 @@ function run(creep) {
         }
 
         if (!target) {
+            console.log(`try find nearest available worker, by ${creep.name}`)
             target = creep.pos.findClosestByRange(workers)
         }
 
         if (!target) {
+            console.log(`try find nearest structure to transfer, by ${creep.name}`)
             target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
         }
 

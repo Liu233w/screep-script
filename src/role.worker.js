@@ -144,7 +144,7 @@ const actions = {
                         s.store.energy > 0
                 }),
                 ...creep.room.find(FIND_CREEPS, {
-                    filter: s => ['longHarvester', 'harvester' ].includes(s.memory.role) &&
+                    filter: s => ['longHarvester', 'harvester'].includes(s.memory.role) &&
                         s.carry.energy > 0 && !s.memory.harvest
                 }),
             ]
@@ -169,6 +169,8 @@ const actions = {
                 } else {
                     result = ERR_NOT_IN_RANGE
                 }
+            } else {
+                console.log(`unknown type: ${typeof best}`)
             }
 
             if (result == ERR_NOT_IN_RANGE) {
