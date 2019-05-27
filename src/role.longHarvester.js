@@ -57,13 +57,14 @@ function run(creep) {
             }
         } else {
             creep.memory.harvest = false
+            return run(creep)
         }
 
     } else {
 
         if (creep.carry.energy <= 0) {
             creep.memory.harvest = true
-            return
+            return run(creep)
         }
 
         creep.say('🔋 store')

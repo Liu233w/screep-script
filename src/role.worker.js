@@ -15,16 +15,10 @@ module.exports = {
 function dispatch(creep) {
 
     (function () {
-
-        if (!creep.memory.state) {
-            tryChangeState(creep, STATES.IDLE)
-        }
-
         if (creep.ticksToLive <= 100 && creep.body.length > 3) {
             tryChangeState(creep, STATES.RENEW)
             return
         }
-
         if (creep.carry.energy === 0) {
             tryChangeState(creep, STATES.HARVEST)
             return
@@ -43,6 +37,8 @@ function dispatch(creep) {
         actions.renew(creep)
     } else if (creep.memory.state === STATES.REPAIR) {
         actions.repair(creep)
+    } else if (!creep.memory.state) {
+        tryChangeState(creep, STATES.IDLE)
     } else {
         console.log(`illegal state: ${creep.memory.state}, in creep ${creep.name}`)
     }
@@ -71,6 +67,8 @@ function tryChangeState(creep, newState) {
     if (newState === STATES.IDLE) {
         // arrange a new job
         arrange(creep)
+        // re-dispatch, to start work in this tick
+        dispatch(creep)
     }
 }
 
