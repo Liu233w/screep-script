@@ -26,6 +26,8 @@ const roleToFunc = {
 
 module.exports.loop = function () {
 
+    const errors = []
+
     for (let name in Memory.creeps) {
         if (!Game.creeps[name]) {
             delete Memory.creeps[name]
@@ -33,16 +35,20 @@ module.exports.loop = function () {
         }
     }
 
-    //ensureCreep('upgrader', 1)
-    ensureCreep('harvester', 5, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
-    ensureWorker(6)
-    if (Game.spawns['Spawn1'].room.find(FIND_HOSTILE_CREEPS).length > 0) {
-        console.log('hostile creep in room')
-        ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
-    }
-    ensureCreep('longHarvester', 5)
+    try {
+        //ensureCreep('upgrader', 1)
+        ensureCreep('harvester', 5, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
+        ensureCreep('worker', 6, [WORK, CARRY, MOVE])
+        if (Game.spawns['Spawn1'].room.find(FIND_HOSTILE_CREEPS).length > 0) {
+            console.log('hostile creep in room')
+            ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
+        }
+        ensureCreep('longHarvester', 5, [WORK, CARRY, MOVE])
 
-    const errors = []
+    } catch (err) {
+        errors.push(err)
+    }
+
     for (let name in Game.creeps) {
         var creep = Game.creeps[name]
 
@@ -64,6 +70,11 @@ module.exports.loop = function () {
         errors.push(err)
     }
 
+    const spawning = Game.spawns['Spawn1'].spawning
+    if (spawning) {
+        spawnSay(Game.spawns['Spawn1'], '🛠️' + spawning.name)
+    }
+
     if (errors.length > 0) {
         throw new Error(`have error when executing ${(()=>{
             let str = ''
@@ -75,107 +86,64 @@ module.exports.loop = function () {
     }
 }
 
-const WORKER_SPAWN_ORDER = [
-    // [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE],
-    [],
-]
-
-const PRE_ALLOCATED_ENERGY = 0
-
-function ensureWorker(number) {
-
-
-    const roleName = 'worker'
-    var list = _.filter(Game.creeps, (creep) => creep.memory.role == roleName)
-
-    if (list.length < number) {
-
-        const energy = Game.spawns['Spawn1'].room.energyAvailable - PRE_ALLOCATED_ENERGY
-
-        // non custom body layout
-        const partEnergy = BODYPART_COST.carry + BODYPART_COST.move + BODYPART_COST.work
-        const partUnitNumber = Math.floor(energy / partEnergy)
-        const nonCustomBody = []
-        for (let i = 0; i < partUnitNumber; ++i) {
-            nonCustomBody.push(WORK)
-            nonCustomBody.push(MOVE)
-            nonCustomBody.push(CARRY)
-        }
-
-        // if non custom body is bigger, use it
-        if (bodyCost(nonCustomBody) > bodyCost(WORKER_SPAWN_ORDER[0])) {
-            trySpawn(roleName, nonCustomBody)
-            return
-        }
-
-        for (let body of WORKER_SPAWN_ORDER) {
-            if (bodyCost(body) <= energy) {
-                trySpawn(roleName, body)
-                return
-            }
-        }
-
-        trySpawn(roleName, nonCustomBody)
-    }
-
-    const spawning = Game.spawns['Spawn1'].spawning
-    if (spawning) {
-        spawnSay(Game.spawns['Spawn1'], '🛠️' + spawning.name)
-    }
-}
-
-function ensureCreep(role, number, body = null) {
+/**
+ * 
+ * @param {string} role 
+ * @param {number} number 
+ * @param {string[]} bodyUnit 
+ * @param {boolean} repeat can body be repeated to build a larger one
+ */
+function ensureCreep(role, number, bodyUnit, repeat = true) {
 
     const spawn = Game.spawns['Spawn1']
-
+    const energy = spawn.room.energyAvailable
     const list = _.filter(Game.creeps, creep => creep.memory.role === role && !creep.memory.toDie)
 
     if (list.length < number) {
 
-        const energy = spawn.room.energyAvailable - PRE_ALLOCATED_ENERGY
+        if (repeat) {
 
-        if (!body) {
-            // non custom body layout
-            const partEnergy = BODYPART_COST.carry + BODYPART_COST.move + BODYPART_COST.work
-            const partUnitNumber = Math.floor(energy / partEnergy)
-            const nonCustomBody = []
-            for (let i = 0; i < partUnitNumber; ++i) {
-                nonCustomBody.push(WORK)
-                nonCustomBody.push(MOVE)
-                nonCustomBody.push(CARRY)
-            }
-
-            body = nonCustomBody
-
-        } else {
-
+            let body = bodyUnit
             let repeat = 1
-            const bodyUnit = body
-            let newBody = body
+            let newBody = bodyUnit
             do {
                 body = newBody
                 newBody = utils.repeatArray(bodyUnit, ++repeat)
             } while (bodyCost(newBody) <= energy)
             // biggest repeat of body
+
+            trySpawn(role, body)
+
+        } else {
+            trySpawn(role, bodyUnit)
         }
 
-        trySpawn(role, body)
+    } else {
 
-    } else if (list.length > number) {
-        console.log(`too much ${role}, trying to reduce. expect: ${number}, now: ${list.length}`)
         const dieList = list.sort((a, b) => bodyCost(a) - bodyCost(b))
-        for (let i = 0; i <= list.length - number; ++i) {
-            dieList[i].memory.toDie = true
+
+        if (list.length > number) {
+            console.log(`too much ${role}, trying to reduce. expect: ${number}, now: ${list.length}`)
+            for (let i = 0; i <= list.length - number; ++i) {
+                dieList[i].memory.toDie = true
+            }
+
+        } else if (repeat && energy >= dieList[0].body.concat(bodyUnit)) {
+            // kill smallest creep to spawn a bigger one
+            dieList[0].memory.toDie = true
         }
     }
 }
 
 function trySpawn(role, parts) {
+
+    const spawn = Game.spawns['Spawn1']
+
     const newName = role + Game.time
-    return Game.spawns['Spawn1'].spawnCreep(parts, newName, {
+    return spawn.spawnCreep(parts, newName, {
         memory: {
             role: role,
-            spawn: 'Spawn1',
+            spawn: spawn.name,
         },
     })
 }

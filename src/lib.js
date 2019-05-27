@@ -75,14 +75,7 @@ function renewOrRecycle(spawn, creep) {
         return
     }
 
-    const totalEnergy = spawn.room.energyAvailable
-    if (totalEnergy >= bodyCost(creep.body) * 2) {
-        // enough energy to build a *2 one
-        creep.say('💀')
-        return spawn.recycleCreep(creep)
-    } else {
-        return spawn.renewCreep(creep)
-    }
+    return spawn.renewCreep(creep)
 }
 
 /**
