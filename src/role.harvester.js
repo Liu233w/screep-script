@@ -26,7 +26,9 @@ function run(creep) {
         if (creep.carry.energy < creep.carryCapacity) {
 
             creep.say('🔄')
-            const source = creep.pos.findClosestByPath(FIND_SOURCES)
+            const source = creep.pos.findClosestByPath(FIND_SOURCES, {
+                filter: s => s.energy > 0,
+            })
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
                 moveTo(creep, source)
             }

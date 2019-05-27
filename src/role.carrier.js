@@ -16,9 +16,6 @@ const spawnStrategy = {
 // eslint-disable-next-line no-unused-vars
 function arrange(creep) {
 
-    /**
-     * @type {StructureExtension[]}
-     */
     return STATES.TRANSFER
 }
 

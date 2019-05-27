@@ -32,7 +32,7 @@ function arrange(creep) {
      * @type {StructureExtension[]}
      */
     const transferEnergy = _.reduce(toTransfer, (sum, curr) => sum + (curr.energyCapacity - curr.energy), 0)
-    const transferNumber = Math.min(Math.ceil(transferEnergy / 100), toTransfer.length)
+    const transferNumber = Math.min(Math.ceil(transferEnergy / 200), toTransfer.length)
     const carrierCount = getRoleCount(creep.room, 'carrier')
     if (transferNumber > carrierCount) {
         if (transferNumber > getWorkerCount(creep.room, STATES.TRANSFER)) {
@@ -70,7 +70,9 @@ function arrange(creep) {
  * @param {String} state 
  */
 function getWorkerCount(room, state) {
-    return stateMachine.getStateCount(room.name, 'worker', state)
+    const stateCount = stateMachine.getStateCount(room.name, 'worker', state)
+    // console.log(`state count: ${stateCount}`)
+    return stateCount
 }
 
 function getRoleCount(room, role) {

@@ -7,23 +7,15 @@ const utils = require('./utils')
 
 const stateMachine = require('./stateMachine')
 
-var roleHarvester = require('./role.harvester')
-var roleUpgrader = require('./role.upgrader')
-var roleBuilder = require('./role.builder')
-
-const roleWorker = require('./role.worker')
-const roleWarrior = require('./role.warrior')
-const roleLongHarvester = require('./role.longHarvester')
-
 const runTower = require('./run.tower')
 
 const roleToFunc = {
-    harvester: roleHarvester.run,
-    upgrader: roleUpgrader.run,
-    builder: roleBuilder.run,
-    worker: roleWorker.run,
-    warrior: roleWarrior.run,
-    longHarvester: roleLongHarvester.run,
+    harvester: require('./role.harvester').run,
+    upgrader: require('./role.upgrader').run,
+    builder: require('./role.builder').run,
+    worker: require('./role.worker').run,
+    warrior: require('./role.warrior').run,
+    longHarvester: require('./role.longHarvester').run,
     carrier: require('./role.carrier').run,
 }
 
@@ -46,6 +38,7 @@ module.exports.loop = function () {
 
     try {
         //ensureCreep('upgrader', 1)
+        ensureCreep('builder', 1, [WORK, CARRY, MOVE])
         ensureCreep('harvester', 5, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
         ensureCreep('worker', 4, [WORK, CARRY, MOVE])
         ensureCreep('carrier', 4, [CARRY, CARRY, MOVE])
@@ -155,7 +148,7 @@ function trySpawn(role, body) {
         return ERR_BUSY
     }
     if (bodyCost(body) > spawn.room.energyAvailable) {
-        spawnSay(spawn, `⚠ NOT ENOUGH ENERGY: ${role}`)
+        spawnSay(spawn, `⚠ NO ENOUGH ENERGY: ${role}`)
         return ERR_NOT_ENOUGH_ENERGY
     }
 

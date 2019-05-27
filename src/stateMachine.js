@@ -8,7 +8,7 @@ const {
 
 const STATES = {
     IDLE: 'idle',
-    HARVEST: 'harvest', // obsoleted
+    HARVEST: 'harvest',
     TAKE: 'take',
     BUILD: 'build',
     UPGRADE: 'upgrade',
@@ -16,6 +16,10 @@ const STATES = {
     RENEW: 'renew',
     REPAIR: 'repair',
 }
+
+/*
+TODO: add target to memory, will reset when change state. use it as target first
+*/
 
 const ACTIONS = {
     /**
@@ -38,7 +42,17 @@ const ACTIONS = {
      * @param {Creep} creep 
      */
     [STATES.HARVEST](creep) {
-        tryChangeState(creep, STATES.TAKE)
+
+        if (creep.carry.energy < creep.carryCapacity) {
+
+            creep.say('🔄')
+            const source = creep.pos.findClosestByPath(FIND_SOURCES)
+            if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+                moveTo(creep, source)
+            }
+        } else {
+            tryChangeState(creep, STATES.IDLE)
+        }
     },
     /**
      * 
@@ -74,6 +88,7 @@ const ACTIONS = {
             }
 
             if (!best) {
+                // TODO: try to harvest
                 creep.say('⚠ no enough source to collect')
                 creep.moveTo(creep.room.find(FIND_MY_SPAWNS)[0])
                 return
@@ -100,7 +115,7 @@ const ACTIONS = {
             if (result == ERR_NOT_IN_RANGE) {
                 moveTo(creep, best, '#ffaa00')
             } else if (result !== OK) {
-                console.log(`harvest error: ${result}, by ${creep.name}`)
+                console.log(`take error: ${result}, by ${creep.name}`)
             }
         } else {
             tryChangeState(creep, STATES.IDLE)
@@ -150,7 +165,16 @@ const ACTIONS = {
         }
 
         creep.say('🔁')
-        moveToSpawnAndThen(creep, spawn => renewOrRecycle(spawn, creep))
+        moveToSpawnAndThen(creep, spawn => {
+            const result = renewOrRecycle(spawn, creep)
+            if (result === ERR_NOT_ENOUGH_ENERGY) {
+                if (creep.carry.energy > 0) {
+                    creep.transfer(spawn, RESOURCE_ENERGY)
+                } else {
+                    tryChangeState(creep, STATES.IDLE)
+                }
+            }
+        })
     },
     /**
      * 
@@ -202,7 +226,7 @@ function dispatch(creep, arrangeFunc) {
         return
     }
 
-    console.log(`executing action ${creep.memory.state}, by ${creep.name}`)
+    // console.log(`executing action ${creep.memory.state}, by ${creep.name}`)
     actionFunc(creep)
 
     if (creep.memory.state === STATES.IDLE) {
@@ -216,7 +240,7 @@ function dispatch(creep, arrangeFunc) {
  * @param {Creep} creep 
  * @param {string} newState 
  */
-function tryChangeState(creep, newState) {
+function tryChangeState(creep, newState, target = null) {
 
     const oldState = creep.memory.state
     if (oldState === newState) {
@@ -226,6 +250,11 @@ function tryChangeState(creep, newState) {
     // console.log(`creep ${creep.name} change state from ${oldState} to ${newState}`)
 
     // callback functions ...
+    // TODO: optimise
+    updateStateCount(creep.room.name, creep.memory.role, oldState, -1)
+    updateStateCount(creep.room.name, creep.memory.role, newState, +1)
+
+    creep.memory.target = target
 
     // end callback functions
 
@@ -240,7 +269,15 @@ function global() {
 }
 
 function getStateCount(roomName, role, state) {
-    return Memory.creepStates[`${roomName}.${role}.${state}`]
+    const key = `${roomName}.${role}.${state}`
+    // console.log('key', key)
+    return Memory.creepStates[key] || 0
+}
+
+function updateStateCount(roomName, role, state, change) {
+    const key = `${roomName}.${role}.${state}`
+    const orig = Memory.creepStates[key] || 0
+    Memory.creepStates[key] = orig + change
 }
 
 function getRoleCount(roomName, role) {
