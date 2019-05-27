@@ -76,7 +76,7 @@ function logError(err) {
 }
 
 function bodyCost(body) {
-    return body.reduce(function (cost, part) {
+    return _.reduce(body, function (cost, part) {
         return cost + BODYPART_COST[part];
     }, 0);
 }
@@ -137,10 +137,18 @@ function ensureWorker(number) {
 
 function ensureCreep(role, number, body = [WORK, CARRY, MOVE]) {
 
-    var list = _.filter(Game.creeps, (creep) => creep.memory.role == role);
+    const list = _.filter(Game.creeps, creep => creep.memory.role === role && !creep.memory.toDie);
 
     if (list.length < number) {
         trySpawn(role, body)
+    }
+
+    if (list.length > number) {
+        console.log(`too much ${role}, trying to reduce. expect: ${number}, now: ${list.length}`)
+        const dieList = list.sort((a, b) => bodyCost(a) - bodyCost(b))
+        for (let i = 0; i <= list.length - number; ++i) {
+            dieList[i].memory.toDie = true
+        }
     }
 }
 

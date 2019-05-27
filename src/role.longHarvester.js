@@ -11,6 +11,13 @@ const sourceId = '5bbcae409099fc012e638a5e'
 function run(creep) {
 
     if (creep.ticksToLive <= 200 || creep.memory.renewing) {
+
+        if (creep.memory.toDie) {
+            creep.say('💀')
+            moveToSpawnAndThen(creep, spawn => spawn.recycleCreep(creep))
+            return
+        }
+
         creep.say('🔁 renew')
         creep.memory.renewing = true
 
@@ -84,7 +91,9 @@ function run(creep) {
                         creep.memory.role === 'worker'
                 })
                 // harvesting worker has higher priority
-                target = creep.pos.findClosestByRange(targets, t => t.memory.state === 'harvest')
+                target = creep.pos.findClosestByRange(targets, {
+                    filter: t => t.memory.state === 'harvest'
+                })
                 if (!target) {
                     target = creep.pos.findClosestByRange(targets)
                 }

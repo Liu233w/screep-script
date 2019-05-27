@@ -1,5 +1,6 @@
 const {
-    FIND_FILTERS
+    moveToSpawnAndThen,
+    FIND_FILTERS,
 } = require('lib')
 
 /**
@@ -238,6 +239,12 @@ const actions = {
 
         if (creep.ticksToLive >= 1400) {
             tryChangeState(creep, STATES.IDLE)
+            return
+        }
+
+        if (creep.memory.toDie) {
+            creep.say('💀')
+            moveToSpawnAndThen(creep, spawn => spawn.recycleCreep(creep))
             return
         }
 

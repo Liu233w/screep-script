@@ -9,6 +9,13 @@ const {
 function run(creep) {
 
     if (creep.ticksToLive <= 100 || creep.memory.renewing) {
+
+        if (creep.memory.toDie) {
+            creep.say('💀')
+            moveToSpawnAndThen(creep, spawn => spawn.recycleCreep(creep))
+            return
+        }
+
         creep.say('🔁 renew')
         creep.memory.renewing = true
 
@@ -48,7 +55,9 @@ function run(creep) {
         })
 
         // harvesting worker has higher priority
-        let target = creep.pos.findClosestByRange(workers, t => t.memory.state === 'harvest')
+        let target = creep.pos.findClosestByRange(workers, {
+            filter: t => t.memory.state === 'harvest'
+        })
 
         if (!target) {
             console.log(`try find nearest available container, by ${creep.name}`)
