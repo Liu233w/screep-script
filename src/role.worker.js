@@ -83,13 +83,23 @@ function arrange(creep) {
     }
 
     const toRepair = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
-    if (toRepair.length * 2 > getWorkerCount(STATES.REPAIR)) {
+    let repairNumber = toRepair.length
+    // if no tower in room, use more creep to repair
+    if (creep.room.find(FIND_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_TOWER
+        }).length <= 0) {
+        repairNumber *= 2
+    }
+    if (repairNumber > getWorkerCount(STATES.REPAIR)) {
         tryChangeState(creep, STATES.REPAIR)
         return
     }
 
     const toBuild = creep.room.find(FIND_CONSTRUCTION_SITES)
-    if (toBuild.length * 2 > getWorkerCount(STATES.BUILD)) {
+    const waitProgress = _.reduce(toBuild, (sum, curr) => sum + (curr.progressTotal - curr.progress), 0)
+    const buildNumber = Math.floor(waitProgress / 5000)
+    // console.log(`build number: ${buildNumber}`)
+    if (buildNumber > getWorkerCount(STATES.BUILD)) {
         tryChangeState(creep, STATES.BUILD)
         return
     }
