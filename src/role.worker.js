@@ -129,7 +129,7 @@ const actions = {
     harvest(creep) {
         if (creep.carry.energy < creep.carryCapacity) {
 
-            creep.say('🔄 harvest')
+            creep.say('🔄')
 
             const sourceList = [
                 ...creep.room.find(FIND_SOURCES),
@@ -187,7 +187,7 @@ const actions = {
     transfer(creep) {
         const target = creep.pos.findClosestByPath(FIND_STRUCTURES, FIND_FILTERS.transfer(creep));
         if (target) {
-            creep.say('⚡ transfer')
+            creep.say('⚡')
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
@@ -200,7 +200,7 @@ const actions = {
      * @param {Creep} creep 
      */
     upgrade(creep) {
-        creep.say('✨ upgrade')
+        creep.say('✨')
         if (Memory.messageToSign && Memory.messageToSign[creep.room.controller.id]) {
             const result = creep.signController(creep.room.controller, Memory.messageToSign[creep.room.controller.id])
             if (result === ERR_NOT_IN_RANGE) {
@@ -220,7 +220,7 @@ const actions = {
     build(creep) {
         const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
         if (target) {
-            creep.say('🚧 build')
+            creep.say('🚧')
             if (creep.build(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
@@ -239,7 +239,7 @@ const actions = {
             return
         }
 
-        creep.say('🔁 renew')
+        creep.say('🔁')
 
         const mySpawn = creep.room.find(FIND_MY_SPAWNS)[0]
         if (mySpawn) {
@@ -259,7 +259,7 @@ const actions = {
     repair(creep) {
         const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
         if (target) {
-            creep.say('🔨 repair')
+            creep.say('🔨')
             if (creep.repair(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
