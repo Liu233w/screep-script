@@ -36,7 +36,7 @@ module.exports.loop = function () {
         console.log(`hostile creep in room`)
         ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
     }
-    ensureCreep('longHarvester', 10, [WORK, CARRY, MOVE, WORK, CARRY, MOVE])
+    ensureCreep('longHarvester', 5)
 
     const errors = []
     for (var name in Game.creeps) {
@@ -86,9 +86,10 @@ const WORKER_SPAWN_ORDER = [
     [],
 ]
 
+const PRE_ALLOCATED_ENERGY = 0
+
 function ensureWorker(number) {
 
-    const PRE_ALLOCATED_ENERGY = 0
 
     const roleName = 'worker'
     var list = _.filter(Game.creeps, (creep) => creep.memory.role == roleName);
@@ -135,11 +136,27 @@ function ensureWorker(number) {
     }
 }
 
-function ensureCreep(role, number, body = [WORK, CARRY, MOVE]) {
+function ensureCreep(role, number, body = null) {
 
     const list = _.filter(Game.creeps, creep => creep.memory.role === role && !creep.memory.toDie);
 
     if (list.length < number) {
+
+        if (!body) {
+            const energy = Game.spawns['Spawn1'].room.energyAvailable - PRE_ALLOCATED_ENERGY
+            // non custom body layout
+            const partEnergy = BODYPART_COST.carry + BODYPART_COST.move + BODYPART_COST.work
+            const partUnitNumber = Math.floor(energy / partEnergy)
+            const nonCustomBody = []
+            for (let i = 0; i < partUnitNumber; ++i) {
+                nonCustomBody.push(WORK)
+                nonCustomBody.push(MOVE)
+                nonCustomBody.push(CARRY)
+            }
+
+            body = nonCustomBody
+        }
+
         trySpawn(role, body)
     }
 
