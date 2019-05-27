@@ -142,7 +142,7 @@ const actions = {
                     filter: s => s.store.energy > 0,
                 }),
                 ...creep.room.find(FIND_STRUCTURES, {
-                    filter: s => s.structureType === STRUCTURE_CONTAINER &&
+                    filter: s => [STRUCTURE_CONTAINER, STRUCTURE_STORAGE].includes(s.structureType) &&
                         s.store.energy > 0,
                 }),
                 ...creep.room.find(FIND_CREEPS, {

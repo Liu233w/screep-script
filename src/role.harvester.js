@@ -49,18 +49,16 @@ function run(creep) {
                 creep.memory.role === 'worker',
         })
 
-        // harvesting worker has higher priority
-        let target = creep.pos.findClosestByRange(workers, {
-            filter: t => t.memory.state === 'harvest',
-        })
-
-        if (!target) {
-            console.log(`try find nearest available container, by ${creep.name}`)
-            target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-                filter: s => s.structureType === STRUCTURE_CONTAINER &&
+        const targets = [
+            ..._.filter(workers, a => a.memory.state === 'harvest'),
+            ...creep.room.find(FIND_STRUCTURES, {
+                filter: s => [STRUCTURE_CONTAINER, STRUCTURE_STORAGE].includes(s.structureType) &&
                     _.sum(s.store) < s.storeCapacity,
-            })
-        }
+            }),
+        ]
+
+        // harvesting worker and containers has higher priority
+        let target = creep.pos.findClosestByRange(targets)
 
         if (!target) {
             console.log(`try find nearest available worker, by ${creep.name}`)
