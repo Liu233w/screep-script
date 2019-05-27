@@ -3,6 +3,8 @@ const {
     spawnSay,
 } = require('./lib')
 
+const utils = require('./utils')
+
 var roleHarvester = require('./role.harvester')
 var roleUpgrader = require('./role.upgrader')
 var roleBuilder = require('./role.builder')
@@ -124,12 +126,15 @@ function ensureWorker(number) {
 
 function ensureCreep(role, number, body = null) {
 
-    const list = _.filter(Game.creeps, creep => creep.memory.role === role && !creep.memory.toDie);
+    const spawn = Game.spawns['Spawn1']
+
+    const list = _.filter(Game.creeps, creep => creep.memory.role === role && !creep.memory.toDie)
 
     if (list.length < number) {
 
+        const energy = spawn.room.energyAvailable - PRE_ALLOCATED_ENERGY
+
         if (!body) {
-            const energy = Game.spawns['Spawn1'].room.energyAvailable - PRE_ALLOCATED_ENERGY
             // non custom body layout
             const partEnergy = BODYPART_COST.carry + BODYPART_COST.move + BODYPART_COST.work
             const partUnitNumber = Math.floor(energy / partEnergy)
@@ -141,12 +146,22 @@ function ensureCreep(role, number, body = null) {
             }
 
             body = nonCustomBody
+
+        } else {
+
+            let repeat = 1
+            const bodyUnit = body
+            let newBody = body
+            do {
+                body = newBody
+                newBody = utils.repeatArray(bodyUnit, ++repeat)
+            } while (bodyCost(newBody) <= energy)
+            // biggest repeat of body
         }
 
         trySpawn(role, body)
-    }
 
-    if (list.length > number) {
+    } else if (list.length > number) {
         console.log(`too much ${role}, trying to reduce. expect: ${number}, now: ${list.length}`)
         const dieList = list.sort((a, b) => bodyCost(a) - bodyCost(b))
         for (let i = 0; i <= list.length - number; ++i) {
