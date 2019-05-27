@@ -43,7 +43,7 @@ module.exports.loop = function () {
             console.log('hostile creep in room')
             ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         }
-        ensureCreep('longHarvester', 5, [WORK, CARRY, MOVE])
+        ensureCreep('longHarvester', 6, [WORK, CARRY, MOVE])
 
     } catch (err) {
         errors.push(err)
@@ -156,6 +156,6 @@ function trySpawn(role, body) {
             spawn: spawn.name,
         },
     })
-    console.log(`trying to spawn creep with body ${body}, result: ${result}`)
+    console.log(`trying to spawn creep with body [${body}], result: ${result}`)
     return result
 }
