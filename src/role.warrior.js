@@ -1,6 +1,7 @@
 const {
     moveToSpawnAndThen,
-} = require('lib')
+    renewOrRecycle,
+} = require('./lib')
 
 /**
  * 
@@ -15,7 +16,7 @@ function run(creep) {
         if (creep.ticksToLive >= 1400) {
             creep.memory.renewing = false
         } else {
-            moveToSpawnAndThen(creep, spawn => spawn.renewCreep(creep))
+            moveToSpawnAndThen(creep, spawn => renewOrRecycle(spawn, creep))
             return
         }
     }

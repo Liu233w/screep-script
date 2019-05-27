@@ -1,6 +1,7 @@
 const {
     moveToSpawnAndThen,
-} = require('lib')
+    renewOrRecycle,
+} = require('./lib')
 
 const sourceId = '5bbcae409099fc012e638a5e'
 
@@ -12,19 +13,13 @@ function run(creep) {
 
     if (creep.ticksToLive <= 200 || creep.memory.renewing) {
 
-        if (creep.memory.toDie) {
-            creep.say('💀')
-            moveToSpawnAndThen(creep, spawn => spawn.recycleCreep(creep))
-            return
-        }
-
         creep.say('🔁 renew')
         creep.memory.renewing = true
 
         if (creep.ticksToLive >= 1400) {
             creep.memory.renewing = false
         } else {
-            moveToSpawnAndThen(creep, spawn => spawn.renewCreep(creep))
+            moveToSpawnAndThen(creep, spawn => renewOrRecycle(spawn, creep))
             return
         }
     }

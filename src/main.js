@@ -1,12 +1,17 @@
-var roleHarvester = require('role.harvester');
-var roleUpgrader = require('role.upgrader');
-var roleBuilder = require('role.builder');
+const {
+    bodyCost,
+    spawnSay,
+} = require('./lib')
 
-const roleWorker = require('role.worker')
-const roleWarrior = require('role.warrior')
-const roleLongHarvester = require('role.longHarvester')
+var roleHarvester = require('./role.harvester');
+var roleUpgrader = require('./role.upgrader');
+var roleBuilder = require('./role.builder');
 
-const runTower = require('run.tower')
+const roleWorker = require('./role.worker')
+const roleWarrior = require('./role.warrior')
+const roleLongHarvester = require('./role.longHarvester')
+
+const runTower = require('./run.tower')
 
 const roleToFunc = {
     harvester: roleHarvester.run,
@@ -75,12 +80,6 @@ function logError(err) {
     console.log(err.message, err.stack)
 }
 
-function bodyCost(body) {
-    return _.reduce(body, function (cost, part) {
-        return cost + BODYPART_COST[part];
-    }, 0);
-}
-
 const WORKER_SPAWN_ORDER = [
     // [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE],
     [],
@@ -126,13 +125,7 @@ function ensureWorker(number) {
 
     const spawning = Game.spawns['Spawn1'].spawning
     if (spawning) {
-        Game.spawns['Spawn1'].room.visual.text(
-            '🛠️' + spawning.name,
-            Game.spawns['Spawn1'].pos.x + 1,
-            Game.spawns['Spawn1'].pos.y, {
-                align: 'left',
-                opacity: 0.8
-            });
+        spawnSay(Game.spawns['Spawn1'], '🛠️' + spawning.name)
     }
 }
 
@@ -173,7 +166,8 @@ function trySpawn(role, parts) {
     const newName = role + Game.time
     return Game.spawns['Spawn1'].spawnCreep(parts, newName, {
         memory: {
-            role: role
+            role: role,
+            spawn: 'Spawn1',
         }
     })
 }

@@ -1,7 +1,8 @@
 const {
     moveToSpawnAndThen,
     FIND_FILTERS,
-} = require('lib')
+    renewOrRecycle,
+} = require('./lib')
 
 /**
  * 
@@ -242,24 +243,8 @@ const actions = {
             return
         }
 
-        if (creep.memory.toDie) {
-            creep.say('💀')
-            moveToSpawnAndThen(creep, spawn => spawn.recycleCreep(creep))
-            return
-        }
-
         creep.say('🔁')
-
-        const mySpawn = creep.room.find(FIND_MY_SPAWNS)[0]
-        if (mySpawn) {
-            if (!creep.pos.inRangeTo(mySpawn, SPAWN_RENEW_RATIO)) {
-                moveTo(creep, mySpawn)
-            } else {
-                mySpawn.renewCreep(creep)
-            }
-        } else {
-            console.info('cannot find a spawn to renew, by ', creep.name)
-        }
+        moveToSpawnAndThen(creep, spawn => renewOrRecycle(spawn, creep))
     },
     /**
      * 

@@ -7,7 +7,7 @@ module.exports = {
     moveToSpawnAndThen: function (creep, callBack) {
         let mySpawn = creep.room.find(FIND_MY_SPAWNS)[0]
         if (!mySpawn) {
-            mySpawn = Game.spawns['Spawn1']
+            mySpawn = Game.spawns[creep.memory.spawn || 'Spawn1']
         }
         if (mySpawn) {
             if (!creep.pos.inRangeTo(mySpawn, SPAWN_RENEW_RATIO)) {
@@ -49,6 +49,9 @@ module.exports = {
             }
         }),
     },
+    bodyCost,
+    renewOrRecycle,
+    spawnSay,
 }
 
 function moveTo(creep, target, stroke = '#ffffff') {
@@ -57,4 +60,52 @@ function moveTo(creep, target, stroke = '#ffffff') {
             stroke,
         }
     })
+}
+
+/**
+ * If spawn are able to build better creep, recycle previous one; else renew it
+ * @param {StructureSpawn} spawn 
+ * @param {Creep} creep 
+ */
+function renewOrRecycle(spawn, creep) {
+
+    if (creep.memory.toDie) {
+        creep.say('💀')
+        spawn.recycleCreep(creep)
+        return
+    }
+
+    const totalEnergy = _.reduce(spawn.room.find(STRUCTURE_EXTENSION), (sum, extension) => sum + extension.energy, 0) + spawn.energy
+    if (totalEnergy >= bodyCost(creep.body) * 2) {
+        // enough energy to build a *2 one
+        creep.say('💀')
+        return spawn.recycleCreep(creep)
+    } else {
+        return spawn.renewCreep(creep)
+    }
+}
+
+/**
+ * total cost to build a creep with the body
+ * @param {BodyPartDefinition[]} body 
+ */
+function bodyCost(body) {
+    return _.reduce(body, function (cost, part) {
+        return cost + BODYPART_COST[part];
+    }, 0);
+}
+
+/**
+ * 
+ * @param {StructureSpawn} spawn 
+ * @param {String} message 
+ */
+function spawnSay(spawn, message) {
+    spawn.room.visual.text(
+        message,
+        spawn.pos.x + 1,
+        spawn.pos.y, {
+            align: 'left',
+            opacity: 0.8
+        })
 }
