@@ -1,12 +1,3 @@
-module.exports = {
-    moveToSpawnAndThen,
-    moveTo,
-    FIND_FILTERS,
-    bodyCost,
-    renewOrRecycle,
-    spawnSay,
-    adjecentSource,
-}
 const FIND_FILTERS = {
     transfer: () => ({
         filter: (structure) => {
@@ -114,4 +105,14 @@ function moveToSpawnAndThen(creep, callBack) {
     } else {
         console.info('cannot find a spawn, by ', creep.name)
     }
+}
+
+module.exports = {
+    moveToSpawnAndThen,
+    moveTo,
+    FIND_FILTERS,
+    bodyCost,
+    renewOrRecycle,
+    spawnSay,
+    adjecentSource,
 }
