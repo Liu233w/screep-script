@@ -1,2 +1,2 @@
 set http_proxy=http://localhost:1080
-start /B grunt screeps
+start /B npm run up

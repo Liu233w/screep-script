@@ -1,6 +1,6 @@
 module.exports = function(grunt) {
 
-    grunt.loadNpmTasks('grunt-screeps');
+    grunt.loadNpmTasks('grunt-screeps')
 
     grunt.initConfig({
         screeps: {
@@ -8,11 +8,11 @@ module.exports = function(grunt) {
                 email: 'wwwlsmcom@outlook.com',
                 password: 'x9bY0HzAFTBr',
                 branch: 'default',
-                ptr: false
+                ptr: false,
             },
             dist: {
-                src: ['src/*.js']
-            }
-        }
-    });
+                src: ['src/*.js'],
+            },
+        },
+    })
 }
