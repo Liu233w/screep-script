@@ -11,7 +11,7 @@ module.exports = {
         }
         if (mySpawn) {
             if (!creep.pos.inRangeTo(mySpawn, SPAWN_RENEW_RATIO)) {
-                moveTo(creep, mySpawn, "#00ff00")
+                moveTo(creep, mySpawn, '#00ff00')
             } else {
                 if (callBack) {
                     callBack(mySpawn)
@@ -23,14 +23,14 @@ module.exports = {
     },
     moveTo,
     FIND_FILTERS: {
-        transfer: locateable => ({
+        transfer: () => ({
             filter: (structure) => {
                 return (
                     structure.structureType == STRUCTURE_EXTENSION ||
                     structure.structureType == STRUCTURE_SPAWN ||
                     structure.structureType == STRUCTURE_TOWER
                 ) && structure.energy < structure.energyCapacity
-            }
+            },
         }),
         repair: locateable => ({
             filter: structure => {
@@ -46,7 +46,7 @@ module.exports = {
                 }
 
                 return structure.hits < structure.hitsMax
-            }
+            },
         }),
     },
     bodyCost,
@@ -58,7 +58,7 @@ function moveTo(creep, target, stroke = '#ffffff') {
     return creep.moveTo(target, {
         visualizePathStyle: {
             stroke,
-        }
+        },
     })
 }
 
@@ -75,7 +75,7 @@ function renewOrRecycle(spawn, creep) {
         return
     }
 
-    const totalEnergy = _.reduce(spawn.room.find(STRUCTURE_EXTENSION), (sum, extension) => sum + extension.energy, 0) + spawn.energy
+    const totalEnergy = spawn.room.energyAvailable
     if (totalEnergy >= bodyCost(creep.body) * 2) {
         // enough energy to build a *2 one
         creep.say('💀')
@@ -91,8 +91,8 @@ function renewOrRecycle(spawn, creep) {
  */
 function bodyCost(body) {
     return _.reduce(body, function (cost, part) {
-        return cost + BODYPART_COST[part];
-    }, 0);
+        return cost + BODYPART_COST[part]
+    }, 0)
 }
 
 /**
@@ -106,6 +106,6 @@ function spawnSay(spawn, message) {
         spawn.pos.x + 1,
         spawn.pos.y, {
             align: 'left',
-            opacity: 0.8
+            opacity: 0.8,
         })
 }

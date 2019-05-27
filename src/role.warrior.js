@@ -21,7 +21,7 @@ function run(creep) {
         }
     }
 
-    const enemy = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
+    const enemy = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS)
     if (enemy) {
         if (creep.attack(enemy) === ERR_NOT_IN_RANGE) {
             creep.moveTo(enemy.pos)
@@ -30,7 +30,7 @@ function run(creep) {
     }
 
     const flag = creep.pos.findClosestByPath(FIND_FLAGS, {
-        filter: flag => flag.color === COLOR_RED
+        filter: flag => flag.color === COLOR_RED,
     })
     if (flag) {
 
@@ -53,7 +53,7 @@ function moveTo(creep, target, stroke = '#ff0000') {
     creep.moveTo(target, {
         visualizePathStyle: {
             stroke,
-        }
+        },
     })
 }
 

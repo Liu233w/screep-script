@@ -3,9 +3,9 @@ const {
     spawnSay,
 } = require('./lib')
 
-var roleHarvester = require('./role.harvester');
-var roleUpgrader = require('./role.upgrader');
-var roleBuilder = require('./role.builder');
+var roleHarvester = require('./role.harvester')
+var roleUpgrader = require('./role.upgrader')
+var roleBuilder = require('./role.builder')
 
 const roleWorker = require('./role.worker')
 const roleWarrior = require('./role.warrior')
@@ -24,13 +24,10 @@ const roleToFunc = {
 
 module.exports.loop = function () {
 
-    for (var name in Memory.creeps) {
+    for (let name in Memory.creeps) {
         if (!Game.creeps[name]) {
-            if (Memory.creeps[name].rule === 'worker') {
-                roleWorker.destruct(Memory.creeps[name])
-            }
-            delete Memory.creeps[name];
-            console.log('Clearing non-existing creep memory:', name);
+            delete Memory.creeps[name]
+            console.log('Clearing non-existing creep memory:', name)
         }
     }
 
@@ -38,14 +35,14 @@ module.exports.loop = function () {
     ensureCreep('harvester', 5, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
     ensureWorker(6)
     if (Game.spawns['Spawn1'].room.find(FIND_HOSTILE_CREEPS).length > 0) {
-        console.log(`hostile creep in room`)
+        console.log('hostile creep in room')
         ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
     }
     ensureCreep('longHarvester', 5)
 
     const errors = []
-    for (var name in Game.creeps) {
-        var creep = Game.creeps[name];
+    for (let name in Game.creeps) {
+        var creep = Game.creeps[name]
 
         const func = roleToFunc[creep.memory.role]
         if (func) {
@@ -67,17 +64,13 @@ module.exports.loop = function () {
 
     if (errors.length > 0) {
         throw new Error(`have error when executing ${(()=>{
-            let str =''
+            let str = ''
             for (let err of errors) {
                 str += '\n' + err.message + '\n' + err.stack
             }
             return str
         })()}`)
     }
-}
-
-function logError(err) {
-    console.log(err.message, err.stack)
 }
 
 const WORKER_SPAWN_ORDER = [
@@ -91,7 +84,7 @@ function ensureWorker(number) {
 
 
     const roleName = 'worker'
-    var list = _.filter(Game.creeps, (creep) => creep.memory.role == roleName);
+    var list = _.filter(Game.creeps, (creep) => creep.memory.role == roleName)
 
     if (list.length < number) {
 
@@ -168,6 +161,6 @@ function trySpawn(role, parts) {
         memory: {
             role: role,
             spawn: 'Spawn1',
-        }
+        },
     })
 }

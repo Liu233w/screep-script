@@ -26,7 +26,7 @@ function run(creep) {
         if (creep.carry.energy < creep.carryCapacity) {
 
             creep.say('🔄')
-            const source = creep.pos.findClosestByPath(FIND_SOURCES);
+            const source = creep.pos.findClosestByPath(FIND_SOURCES)
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
                 moveTo(creep, source)
             }
@@ -46,19 +46,19 @@ function run(creep) {
 
         const workers = creep.room.find(FIND_CREEPS, {
             filter: creep => creep.carry.energy < creep.carryCapacity &&
-                creep.memory.role === 'worker'
+                creep.memory.role === 'worker',
         })
 
         // harvesting worker has higher priority
         let target = creep.pos.findClosestByRange(workers, {
-            filter: t => t.memory.state === 'harvest'
+            filter: t => t.memory.state === 'harvest',
         })
 
         if (!target) {
             console.log(`try find nearest available container, by ${creep.name}`)
             target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: s => s.structureType === STRUCTURE_CONTAINER &&
-                    _.sum(s.store) < s.storeCapacity
+                    _.sum(s.store) < s.storeCapacity,
             })
         }
 

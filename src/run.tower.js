@@ -1,5 +1,5 @@
 const {
-    FIND_FILTERS
+    FIND_FILTERS,
 } = require('lib')
 
 function run() {
@@ -10,14 +10,14 @@ function run() {
             continue
         }
 
-        const closestDamagedStructure = item.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(item));
+        const closestDamagedStructure = item.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(item))
         if (closestDamagedStructure) {
-            item.repair(closestDamagedStructure);
+            item.repair(closestDamagedStructure)
         }
 
-        const closestHostile = item.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        const closestHostile = item.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
         if (closestHostile) {
-            item.attack(closestHostile);
+            item.attack(closestHostile)
         }
     }
 }

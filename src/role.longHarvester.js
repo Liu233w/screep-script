@@ -3,8 +3,6 @@ const {
     renewOrRecycle,
 } = require('./lib')
 
-const sourceId = '5bbcae409099fc012e638a5e'
-
 /**
  * 
  * @param {Creep} creep 
@@ -70,24 +68,24 @@ function run(creep) {
 
         creep.say('🔋 store')
 
-        const spawn = Game.spawns['Spawn1'];
+        const spawn = Game.spawns['Spawn1']
         if (creep.room !== spawn.room) {
             moveTo(creep, spawn)
         } else {
 
             let target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: s => s.structureType === STRUCTURE_CONTAINER &&
-                    _.sum(s.store) < s.storeCapacity
+                    _.sum(s.store) < s.storeCapacity,
             })
 
             if (!target) {
                 const targets = creep.room.find(FIND_CREEPS, {
                     filter: creep => creep.carry.energy < creep.carryCapacity &&
-                        creep.memory.role === 'worker'
+                        creep.memory.role === 'worker',
                 })
                 // harvesting worker has higher priority
                 target = creep.pos.findClosestByRange(targets, {
-                    filter: t => t.memory.state === 'harvest'
+                    filter: t => t.memory.state === 'harvest',
                 })
                 if (!target) {
                     target = creep.pos.findClosestByRange(targets)
@@ -109,7 +107,7 @@ function moveTo(creep, target, stroke = '#ffffff') {
     return creep.moveTo(target, {
         visualizePathStyle: {
             stroke,
-        }
+        },
     })
 }
 

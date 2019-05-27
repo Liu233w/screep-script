@@ -4,6 +4,10 @@ const {
     renewOrRecycle,
 } = require('./lib')
 
+module.exports = {
+    run: dispatch,
+}
+
 /**
  * 
  * @param {Creep} creep 
@@ -43,8 +47,6 @@ function dispatch(creep) {
         console.log(`illegal state: ${creep.memory.state}, in creep ${creep.name}`)
     }
 }
-
-function destruct(creepMemory) {}
 
 /**
  *  
@@ -88,7 +90,7 @@ function arrange(creep) {
     let repairNumber = toRepair.length
     // if no tower in room, use more creep to repair
     if (creep.room.find(FIND_STRUCTURES, {
-            filter: s => s.structureType === STRUCTURE_TOWER
+            filter: s => s.structureType === STRUCTURE_TOWER,
         }).length <= 0) {
         repairNumber *= 2
     }
@@ -136,18 +138,18 @@ const actions = {
             const sourceList = [
                 // ...creep.room.find(FIND_SOURCES),
                 ...creep.room.find(FIND_DROPPED_RESOURCES, {
-                    filter: s => s.resourceType === RESOURCE_ENERGY
+                    filter: s => s.resourceType === RESOURCE_ENERGY,
                 }),
                 ...creep.room.find(FIND_TOMBSTONES, {
-                    filter: s => s.store.energy > 0
+                    filter: s => s.store.energy > 0,
                 }),
                 ...creep.room.find(FIND_STRUCTURES, {
                     filter: s => s.structureType === STRUCTURE_CONTAINER &&
-                        s.store.energy > 0
+                        s.store.energy > 0,
                 }),
                 ...creep.room.find(FIND_CREEPS, {
                     filter: s => ['longHarvester', 'harvester'].includes(s.memory.role) &&
-                        s.carry.energy > 0 && !s.memory.harvest
+                        s.carry.energy > 0 && !s.memory.harvest,
                 }),
             ]
 
@@ -189,7 +191,7 @@ const actions = {
      * @param {Creep} creep 
      */
     transfer(creep) {
-        const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep));
+        const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
         if (target) {
             creep.say('⚡')
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
@@ -260,14 +262,14 @@ const actions = {
         } else {
             tryChangeState(creep, STATES.IDLE)
         }
-    }
+    },
 }
 
 function moveTo(creep, target, stroke = '#ffffff') {
     creep.moveTo(target, {
         visualizePathStyle: {
             stroke,
-        }
+        },
     })
 }
 
@@ -289,6 +291,3 @@ const STATES = {
     RENEW: 'renew',
     REPAIR: 'repair',
 }
-
-module.exports.run = dispatch
-module.exports.destruct = destruct
