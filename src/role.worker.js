@@ -99,7 +99,7 @@ function arrange(creep) {
 
     const toBuild = creep.room.find(FIND_CONSTRUCTION_SITES)
     const waitProgress = _.reduce(toBuild, (sum, curr) => sum + (curr.progressTotal - curr.progress), 0)
-    const buildNumber = Math.floor(waitProgress / 5000)
+    const buildNumber = Math.ceil(waitProgress / 5000)
     console.log(`progress wait to build: ${waitProgress}, builder number: ${buildNumber}`)
     if (buildNumber > getWorkerCount(STATES.BUILD)) {
         tryChangeState(creep, STATES.BUILD)
