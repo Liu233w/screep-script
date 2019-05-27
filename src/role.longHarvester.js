@@ -73,7 +73,7 @@ function run(creep) {
             moveTo(creep, spawn)
         } else {
 
-            let target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+            let target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: s => s.structureType === STRUCTURE_CONTAINER &&
                     _.sum(s.store) < s.storeCapacity
             })
@@ -84,9 +84,9 @@ function run(creep) {
                         creep.memory.role === 'worker'
                 })
                 // harvesting worker has higher priority
-                target = creep.pos.findClosestByPath(targets, t => t.memory.state === 'harvest')
+                target = creep.pos.findClosestByRange(targets, t => t.memory.state === 'harvest')
                 if (!target) {
-                    target = creep.pos.findClosestByPath(targets)
+                    target = creep.pos.findClosestByRange(targets)
                 }
             }
 

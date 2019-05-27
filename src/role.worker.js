@@ -185,7 +185,7 @@ const actions = {
      * @param {Creep} creep 
      */
     transfer(creep) {
-        const target = creep.pos.findClosestByPath(FIND_STRUCTURES, FIND_FILTERS.transfer(creep));
+        const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep));
         if (target) {
             creep.say('⚡')
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {

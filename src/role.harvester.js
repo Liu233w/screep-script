@@ -46,22 +46,23 @@ function run(creep) {
             filter: creep => creep.carry.energy < creep.carryCapacity &&
                 creep.memory.role === 'worker'
         })
+
         // harvesting worker has higher priority
-        let target = creep.pos.findClosestByPath(workers, t => t.memory.state === 'harvest')
+        let target = creep.pos.findClosestByRange(workers, t => t.memory.state === 'harvest')
 
         if (!target) {
-            target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+            target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: s => s.structureType === STRUCTURE_CONTAINER &&
                     _.sum(s.store) < s.storeCapacity
             })
         }
 
         if (!target) {
-            target = creep.pos.findClosestByPath(workers)
+            target = creep.pos.findClosestByRange(workers)
         }
 
         if (!target) {
-            target = creep.pos.findClosestByPath(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
+            target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
         }
 
         if (target) {
