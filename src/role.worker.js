@@ -98,7 +98,7 @@ function arrange(creep) {
     const toBuild = creep.room.find(FIND_CONSTRUCTION_SITES)
     const waitProgress = _.reduce(toBuild, (sum, curr) => sum + (curr.progressTotal - curr.progress), 0)
     const buildNumber = Math.floor(waitProgress / 5000)
-    console.log(`progress wait to build: ${waitProgress}, build number: ${buildNumber}`)
+    console.log(`progress wait to build: ${waitProgress}, builder number: ${buildNumber}`)
     if (buildNumber > getWorkerCount(STATES.BUILD)) {
         tryChangeState(creep, STATES.BUILD)
         return
@@ -129,10 +129,10 @@ const actions = {
     harvest(creep) {
         if (creep.carry.energy < creep.carryCapacity) {
 
-            creep.say('🔄')
+            creep.say('💡')
 
             const sourceList = [
-                ...creep.room.find(FIND_SOURCES),
+                // ...creep.room.find(FIND_SOURCES),
                 ...creep.room.find(FIND_DROPPED_RESOURCES, {
                     filter: s => s.resourceType === RESOURCE_ENERGY
                 }),
@@ -144,8 +144,8 @@ const actions = {
                         s.store.energy > 0
                 }),
                 ...creep.room.find(FIND_CREEPS, {
-                    filter: s => s.memory.role === 'longHarvester' &&
-                        s.carry.energy > 0
+                    filter: s => ['longHarvester', 'harvester' ].includes(s.memory.role) &&
+                        s.carry.energy > 0 && !s.memory.harvest
                 }),
             ]
 

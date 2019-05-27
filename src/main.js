@@ -30,10 +30,13 @@ module.exports.loop = function () {
     }
 
     //ensureCreep('upgrader', 1)
-    //ensureCreep('harvester', 1)
-    ensureWorker(12)
-    //ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
-    ensureCreep('longHarvester', 8, [WORK, CARRY, MOVE, WORK, CARRY, MOVE])
+    ensureCreep('harvester', 5, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
+    ensureWorker(6)
+    if (Game.spawns['Spawn1'].room.find(FIND_HOSTILE_CREEPS).length > 0) {
+        console.log(`hostile creep in room`)
+        ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE])
+    }
+    ensureCreep('longHarvester', 10, [WORK, CARRY, MOVE, WORK, CARRY, MOVE])
 
     const errors = []
     for (var name in Game.creeps) {
@@ -79,7 +82,8 @@ function bodyCost(body) {
 }
 
 const WORKER_SPAWN_ORDER = [
-    [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE],
+    // [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE],
+    [],
 ]
 
 function ensureWorker(number) {
