@@ -154,9 +154,15 @@ const actions = {
             ]
 
             let best = creep.pos.findClosestByPath(sourceList)
-            if (best === null) {
+            if (!best) {
                 // console.log('cannot find a path to the source, it may due to a jam, in worker.harvest, by ' + creep.name)
                 best = creep.pos.findClosestByRange(sourceList)
+            }
+
+            if (!best) {
+                creep.say('⚠ no enough source to collect')
+                creep.moveTo(creep.room.find(FIND_MY_SPAWNS)[0])
+                return
             }
 
             let result

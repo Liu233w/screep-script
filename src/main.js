@@ -128,22 +128,34 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
                 dieList[i].memory.toDie = true
             }
 
+            // length == number
         } else if (repeat && energy >= dieList[0].body.concat(bodyUnit)) {
             // kill smallest creep to spawn a bigger one
+            console.log(`kill ${dieList[0].name} to make a better one, old bodyCost: ${bodyCost(dieList[0].body)}`)
             dieList[0].memory.toDie = true
         }
     }
 }
 
-function trySpawn(role, parts) {
+function trySpawn(role, body) {
 
     const spawn = Game.spawns['Spawn1']
 
+    if (spawn.spawning) {
+        return ERR_BUSY
+    }
+    if (bodyCost(body) > spawn.room.energyAvailable) {
+        spawnSay(spawn, `⚠ NOT ENOUGH ENERGY: ${role}`)
+        return ERR_NOT_ENOUGH_ENERGY
+    }
+
     const newName = role + Game.time
-    return spawn.spawnCreep(parts, newName, {
+    const result = spawn.spawnCreep(body, newName, {
         memory: {
             role: role,
             spawn: spawn.name,
         },
     })
+    console.log(`trying to spawn creep with body ${body}, result: ${result}`)
+    return result
 }
