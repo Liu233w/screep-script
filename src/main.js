@@ -46,7 +46,7 @@ module.exports.loop = function () {
             Game.spawns['Spawn1'].room.find(FIND_SOURCES),
             (sum, curr) => sum + lib.findAdjcentPassableAreaNumber(curr),
             0)
-        ensureCreep('harvester', harvesterCount + 1, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
+        ensureCreep('harvester', harvesterCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
 
         ensureCreep('worker', 4, [WORK, CARRY, MOVE])
         ensureCreep('carrier', 4, [CARRY, CARRY, MOVE])
@@ -146,10 +146,15 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
             }
 
             // length == number
-        } else if (repeat && energy >= dieList[0].body.concat(bodyUnit)) {
-            // kill smallest creep to spawn a bigger one
-            console.log(`kill ${dieList[0].name} to make a better one, old bodyCost: ${bodyCost(dieList[0].body)}`)
-            dieList[0].memory.toDie = true
+        } else {
+            const oldBody = _.map(dieList[0].body, 'type')
+            const newBody = oldBody.concat(...bodyUnit)
+            if (repeat && energy >= bodyCost(newBody)) {
+                // kill smallest creep to spawn a bigger one
+                console.log(`kill ${dieList[0].name} to make a better one, old bodyCost: ${bodyCost(oldBody)}, new body parts: ${newBody}`)
+                dieList[0].memory.toDie = true
+                trySpawn(role, newBody)
+            }
         }
     }
 }

@@ -46,7 +46,6 @@ function moveTo(creep, target, stroke = '#ffffff') {
 function renewOrRecycle(spawn, creep) {
 
     if (creep.memory.toDie) {
-        creep.say('💀')
         spawn.recycleCreep(creep)
         return
     }
@@ -172,6 +171,15 @@ function* adjcentPositionGenerator(pos) {
     }
 }
 
+/**
+ * 
+ * @param {Creep} creep 
+ * @param {string} message 
+ */
+function sayWithSufix(creep, message) {
+    creep.say(message + creep.memory.role[0] + creep.name[creep.name.length - 1] + (creep.memory.toDie ? '💀' : ''), true)
+}
+
 module.exports = {
     moveToSpawnAndThen,
     moveTo,
@@ -184,4 +192,5 @@ module.exports = {
     findASpawnOfMine,
     findAdjcentPassableAreaNumber,
     adjcentPositionGenerator,
+    sayWithSufix,
 }

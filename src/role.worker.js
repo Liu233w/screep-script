@@ -32,10 +32,11 @@ function arrange(creep) {
      * @type {StructureExtension[]}
      */
     const transferEnergy = _.reduce(toTransfer, (sum, curr) => sum + (curr.energyCapacity - curr.energy), 0)
-    const transferNumber = Math.min(Math.ceil(transferEnergy / 200), toTransfer.length)
-    const carrierCount = getRoleCount(creep.room, 'carrier')
-    if (transferNumber > carrierCount + getWorkerCount(creep.room, STATES.TRANSFER)) {
-        console.log(`doing carrier's job, need transfer count ${transferNumber}`)
+    const carrierMaxEnergy = _.reduce(creep.room.find(FIND_MY_CREEPS, {
+        filter: c => c.memory.role === 'carrier',
+    }), (sum, curr) => sum + curr.carryCapacity, 0)
+    if (transferEnergy > carrierMaxEnergy + creep.carryCapacity) {
+        console.log(`doing carrier's job, need energy ${transferEnergy}, while carriers' capacity ${carrierMaxEnergy}`)
         return STATES.TRANSFER
     }
 

@@ -5,6 +5,7 @@ const {
     adjecentSource,
     moveTo,
     moveToHomeAndThen,
+    sayWithSufix,
 } = require('./lib')
 
 const STATES = {
@@ -33,7 +34,7 @@ const ACTIONS = {
     [STATES.BUILD](creep) {
         const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
         if (target) {
-            creep.say('🚧' + creep.memory.role[0])
+            sayWithSufix(creep, '🚧')
             if (creep.build(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
@@ -49,7 +50,7 @@ const ACTIONS = {
 
         if (creep.carry.energy < creep.carryCapacity) {
 
-            creep.say('🔄' + creep.memory.role[0])
+            sayWithSufix(creep, '🔄')
             const source = creep.pos.findClosestByPath(FIND_SOURCES)
             const result = creep.harvest(source)
             if (result == ERR_NOT_IN_RANGE) {
@@ -69,7 +70,7 @@ const ACTIONS = {
 
         if (creep.carry.energy < creep.carryCapacity) {
 
-            creep.say('💡' + creep.memory.role[0])
+            sayWithSufix(creep, '🔌')
 
             const sourceList = [
                 // ...creep.room.find(FIND_SOURCES),
@@ -82,7 +83,7 @@ const ACTIONS = {
                 ...creep.room.find(FIND_STRUCTURES, {
                     filter: s => [STRUCTURE_CONTAINER, STRUCTURE_STORAGE].includes(s.structureType) && s.store.energy > 0,
                 }),
-                ...creep.room.find(FIND_CREEPS, {
+                ...creep.room.find(FIND_MY_CREEPS, {
                     filter: s => s.memory.state === STATES.STORE && s.carry.energy > 0,
                 }),
             ]
@@ -95,7 +96,7 @@ const ACTIONS = {
 
             if (!best) {
                 // TODO: try to harvest
-                creep.say('⚠ no enough source to collect')
+                sayWithSufix(creep, '🔌⚠')
                 creep.moveTo(creep.room.find(FIND_MY_SPAWNS)[0])
                 return
             }
@@ -133,7 +134,7 @@ const ACTIONS = {
     [STATES.TRANSFER](creep) {
         const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
         if (target) {
-            creep.say('⚡' + creep.memory.role[0])
+            sayWithSufix(creep, '⚡')
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
@@ -151,7 +152,7 @@ const ACTIONS = {
             tryChangeState(creep, STATES.GO_HOME)
         }
 
-        creep.say('✨' + creep.memory.role[0])
+        sayWithSufix(creep, '✨')
         if (Memory.messageToSign && Memory.messageToSign[creep.room.controller.id]) {
             const result = creep.signController(creep.room.controller, Memory.messageToSign[creep.room.controller.id])
             if (result === ERR_NOT_IN_RANGE) {
@@ -175,7 +176,7 @@ const ACTIONS = {
             return
         }
 
-        creep.say('🔁' + creep.memory.role[0])
+        sayWithSufix(creep, '♻')
         moveToSpawnAndThen(creep, spawn => {
             const result = renewOrRecycle(spawn, creep)
             if (result === ERR_NOT_ENOUGH_ENERGY) {
@@ -194,7 +195,7 @@ const ACTIONS = {
     [STATES.REPAIR](creep) {
         const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
         if (target) {
-            creep.say('🔨' + creep.memory.role[0])
+            sayWithSufix(creep, '🔨')
             if (creep.repair(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
@@ -209,7 +210,7 @@ const ACTIONS = {
     [STATES.STORE](creep) {
 
         const targets = [
-            ...creep.room.find(FIND_CREEPS, {
+            ...creep.room.find(FIND_MY_CREEPS, {
                 filter: c => c.memory.state === STATES.TAKE,
             }),
             ...creep.room.find(FIND_STRUCTURES, FIND_FILTERS.storeToStructure(creep)),
@@ -222,14 +223,14 @@ const ACTIONS = {
         const CREEP_FULL_THRESHOLD = 10
         if (!target) {
             console.log(`try find nearest creep to give energy, by ${creep.name}`)
-            target = creep.pos.findClosestByRange(FIND_CREEPS, {
+            target = creep.pos.findClosestByRange(FIND_MY_CREEPS, {
                 filter: c => c.memory.role !== creep.memory.role &&
                     c.carry.energy < c.carryCapacity - CREEP_FULL_THRESHOLD,
             })
         }
 
         if (target) {
-            creep.say('🔋' + creep.memory.role[0])
+            sayWithSufix(creep, '🔋')
             if (creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                 moveTo(creep, target)
             }
@@ -243,7 +244,7 @@ const ACTIONS = {
      * @param {Creep} creep 
      */
     [STATES.GO_HOME](creep) {
-        creep.say('🏠' + creep.memory.role[0])
+        sayWithSufix(creep, '🏠')
         moveToHomeAndThen(creep, () => tryChangeState(creep, STATES.IDLE))
     },
     /**
@@ -256,7 +257,7 @@ const ACTIONS = {
 
         if (creep.carry.energy < creep.carryCapacity) {
 
-            creep.say('🔄🚞' + creep.memory.role[0])
+            sayWithSufix(creep, '🔄🚞')
 
             // TODO: multiple flags
             const flag = _.filter(Game.flags, a => a.color === TARGET_FLAG_COLOR)[0]
