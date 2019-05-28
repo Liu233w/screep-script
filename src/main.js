@@ -43,6 +43,7 @@ module.exports.loop = function () {
         ensureCreep('builder', 0, [WORK, CARRY, MOVE])
 
         // TODO: multiple room
+        // TODO: assign creep to source
         const harvesterCount = _.reduce(
             Game.spawns['Spawn1'].room.find(FIND_SOURCES),
             (sum, curr) => sum + lib.findAdjcentPassableAreaNumber(curr),
@@ -185,7 +186,7 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
     }
 }
 
-function trySpawn(role, body) {
+function trySpawn(role, body, memory = {}) {
 
     const spawn = Game.spawns['Spawn1']
 
@@ -199,10 +200,10 @@ function trySpawn(role, body) {
 
     const newName = role + Game.time
     const result = spawn.spawnCreep(body, newName, {
-        memory: {
+        memory: _.assign({
             role: role,
             spawn: spawn.name,
-        },
+        }, memory),
     })
     console.log(`trying to spawn ${role} with body [${body}], result: ${result}`)
     return result

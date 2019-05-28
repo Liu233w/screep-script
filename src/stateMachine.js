@@ -51,9 +51,21 @@ const ACTIONS = {
         if (creep.carry.energy < creep.carryCapacity) {
 
             sayWithSufix(creep, '🔄')
-            const source = creep.pos.findClosestByPath(FIND_SOURCES, {
-                filter: s => s.energy > 0,
-            })
+
+            /**
+             * @type {Source}
+             */
+            let source
+            if (creep.memory.sourceTarget) {
+                source = Game.getObjectById(creep.memory.sourceTarget)
+                if (source && source.energy < 0) {
+                    source = null
+                }
+            } else {
+                source = creep.pos.findClosestByPath(FIND_SOURCES, {
+                    filter: s => s.energy > 0,
+                })
+            }
 
             if (!source) {
                 if (creep.carry.energy > 0) {
