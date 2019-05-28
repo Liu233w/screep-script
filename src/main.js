@@ -57,7 +57,8 @@ module.exports.loop = function () {
             warriorNumber = 1
         }
         ensureCreep('warrior', warriorNumber, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
-        ensureCreep('longHarvester', 6, [WORK, CARRY, MOVE])
+        // TODO: change number by total body parts
+        ensureCreep('longHarvester', 5, [WORK, CARRY, MOVE])
 
     } catch (err) {
         errors.push(err)

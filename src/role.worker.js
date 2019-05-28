@@ -74,10 +74,6 @@ function getWorkerCount(room, state) {
     return stateCount
 }
 
-function getRoleCount(room, role) {
-    return stateMachine.getRoleCount(room.name, role)
-}
-
 module.exports = {
     run,
     spawnStrategy,

@@ -151,6 +151,7 @@ const ACTIONS = {
         const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
         if (target) {
             sayWithSufix(creep, '⚡')
+            // TODO: if a working target have a nearly full energy, don not transfer to it, because it's too slow
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
@@ -199,7 +200,7 @@ const ACTIONS = {
                 if (creep.carry.energy > 0) {
                     creep.transfer(spawn, RESOURCE_ENERGY)
                 } else {
-                    tryChangeState(creep, STATES.IDLE)
+                    // tryChangeState(creep, STATES.IDLE)
                 }
             }
         })
