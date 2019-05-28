@@ -72,6 +72,7 @@ const ACTIONS = {
                     tryChangeState(creep, STATES.IDLE)
                 } else {
                     // TODO: move off the road ?
+                    // TODO: try changing role temporary when source refreshing time is too long ?
                     sayWithSufix(creep, '🔄⚠')
                 }
             }
@@ -117,15 +118,16 @@ const ACTIONS = {
             }
 
             if (!best) {
-                // TODO: try to harvest
+                // TODO: try to harvest ? not work for carrier though
                 sayWithSufix(creep, '🔌⚠')
                 tryChangeState(creep, STATES.IDLE)
+                // TODO: try move to spawn to pick up dead creep body? can check if a 'toDie' creep is going to spawn point 
                 // creep.moveTo(creep.room.find(FIND_MY_SPAWNS)[0])
                 return
             }
 
             if (best.pos.getRangeTo(creep) > 20 && creep.carry.energy >= 100) {
-                console.log(`source target too far, energy enough, by ${creep.name}`)
+                // console.log(`source target too far, energy enough, by ${creep.name}`)
                 tryChangeState(creep, STATES.IDLE)
             }
 
@@ -213,7 +215,7 @@ const ACTIONS = {
                 if (creep.carry.energy > 0) {
                     creep.transfer(spawn, RESOURCE_ENERGY)
                 } else {
-                    // tryChangeState(creep, STATES.IDLE)
+                    tryChangeState(creep, STATES.IDLE)
                 }
             }
         })

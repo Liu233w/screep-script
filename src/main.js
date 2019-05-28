@@ -44,11 +44,23 @@ module.exports.loop = function () {
 
         // TODO: multiple room
         // TODO: assign creep to source
-        const harvesterCount = _.reduce(
-            Game.spawns['Spawn1'].room.find(FIND_SOURCES),
-            (sum, curr) => sum + lib.findAdjcentPassableAreaNumber(curr),
-            0)
-        ensureCreep('harvester', harvesterCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
+        // const harvesterCount = _.reduce(
+        //     Game.spawns['Spawn1'].room.find(FIND_SOURCES),
+        //     (sum, curr) => sum + lib.findAdjcentPassableAreaNumber(curr),
+        //     0)
+
+        /*
+        source: 3000 
+        take 300 tick to regenerate
+        a WORK take 2 per tick
+        2 harvester = 8 worker = 16 energy per tick
+        drying source take about 186 tick
+
+        only need 2 harvester per source
+        */
+
+        // TODO: if i can set the target of a harvester, then dont need '+1'
+        ensureCreep('harvester', Game.spawns['Spawn1'].room.find(FIND_SOURCES).length * 2 + 1, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
 
         ensureCreep('worker', 4, [WORK, CARRY, MOVE])
         ensureCreep('carrier', 4, [CARRY, CARRY, MOVE])
@@ -166,6 +178,7 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
         if (list.length > number) {
             console.log(`too much ${role}, trying to reduce. expect: ${number}, now: ${list.length}`)
             for (let i = 0; i <= list.length - number; ++i) {
+                // TODO: set dying strategy in state machine's arrange, rather than changing roles
                 dieList[i].memory.oldRole = role
                 dieList[i].memory.role = 'toDie'
             }
