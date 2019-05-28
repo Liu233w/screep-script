@@ -4,6 +4,7 @@ const {
     renewOrRecycle,
     adjecentSource,
     moveTo,
+    moveToHomeAndThen,
 } = require('./lib')
 
 const STATES = {
@@ -15,6 +16,9 @@ const STATES = {
     TRANSFER: 'transfer',
     RENEW: 'renew',
     REPAIR: 'repair',
+    STORE: 'store',
+    GO_HOME: 'go_home',
+    LONG_HARVEST: 'long_harvest',
 }
 
 /*
@@ -29,7 +33,7 @@ const ACTIONS = {
     [STATES.BUILD](creep) {
         const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
         if (target) {
-            creep.say('🚧')
+            creep.say('🚧' + creep.memory.role[0])
             if (creep.build(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
@@ -45,10 +49,13 @@ const ACTIONS = {
 
         if (creep.carry.energy < creep.carryCapacity) {
 
-            creep.say('🔄')
+            creep.say('🔄' + creep.memory.role[0])
             const source = creep.pos.findClosestByPath(FIND_SOURCES)
-            if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+            const result = creep.harvest(source)
+            if (result == ERR_NOT_IN_RANGE) {
                 moveTo(creep, source)
+            } else if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                tryChangeState(creep, STATES.IDLE)
             }
         } else {
             tryChangeState(creep, STATES.IDLE)
@@ -59,9 +66,10 @@ const ACTIONS = {
      * @param {Creep} creep 
      */
     [STATES.TAKE](creep) {
+
         if (creep.carry.energy < creep.carryCapacity) {
 
-            creep.say('💡')
+            creep.say('💡' + creep.memory.role[0])
 
             const sourceList = [
                 // ...creep.room.find(FIND_SOURCES),
@@ -72,12 +80,10 @@ const ACTIONS = {
                     filter: s => s.store.energy > 0,
                 }),
                 ...creep.room.find(FIND_STRUCTURES, {
-                    filter: s => [STRUCTURE_CONTAINER, STRUCTURE_STORAGE].includes(s.structureType) &&
-                        s.store.energy > 0,
+                    filter: s => [STRUCTURE_CONTAINER, STRUCTURE_STORAGE].includes(s.structureType) && s.store.energy > 0,
                 }),
                 ...creep.room.find(FIND_CREEPS, {
-                    filter: s => ['longHarvester', 'harvester'].includes(s.memory.role) &&
-                        s.carry.energy > 0 && !s.memory.harvest,
+                    filter: s => s.memory.state === STATES.STORE && s.carry.energy > 0,
                 }),
             ]
 
@@ -103,7 +109,6 @@ const ACTIONS = {
                 result = creep.withdraw(best, RESOURCE_ENERGY)
             } else if (best instanceof Creep) {
                 if (creep.pos.isNearTo(best)) {
-                    best.cancelOrder()
                     result = best.transfer(creep, RESOURCE_ENERGY)
                 } else {
                     result = ERR_NOT_IN_RANGE
@@ -128,7 +133,7 @@ const ACTIONS = {
     [STATES.TRANSFER](creep) {
         const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
         if (target) {
-            creep.say('⚡')
+            creep.say('⚡' + creep.memory.role[0])
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
@@ -141,7 +146,12 @@ const ACTIONS = {
      * @param {Creep} creep 
      */
     [STATES.UPGRADE](creep) {
-        creep.say('✨')
+
+        if (!creep.room.controller.my) {
+            tryChangeState(creep, STATES.GO_HOME)
+        }
+
+        creep.say('✨' + creep.memory.role[0])
         if (Memory.messageToSign && Memory.messageToSign[creep.room.controller.id]) {
             const result = creep.signController(creep.room.controller, Memory.messageToSign[creep.room.controller.id])
             if (result === ERR_NOT_IN_RANGE) {
@@ -150,7 +160,8 @@ const ACTIONS = {
                 delete Memory.messageToSign[creep.room.controller.id]
             }
         }
-        if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+        const result = creep.upgradeController(creep.room.controller)
+        if (result == ERR_NOT_IN_RANGE) {
             moveTo(creep, creep.room.controller)
         }
     },
@@ -164,7 +175,7 @@ const ACTIONS = {
             return
         }
 
-        creep.say('🔁')
+        creep.say('🔁' + creep.memory.role[0])
         moveToSpawnAndThen(creep, spawn => {
             const result = renewOrRecycle(spawn, creep)
             if (result === ERR_NOT_ENOUGH_ENERGY) {
@@ -183,7 +194,7 @@ const ACTIONS = {
     [STATES.REPAIR](creep) {
         const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
         if (target) {
-            creep.say('🔨')
+            creep.say('🔨' + creep.memory.role[0])
             if (creep.repair(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }
@@ -191,22 +202,131 @@ const ACTIONS = {
             tryChangeState(creep, STATES.IDLE)
         }
     },
+    /**
+     * 
+     * @param {Creep} creep 
+     */
+    [STATES.STORE](creep) {
+
+        const targets = [
+            ...creep.room.find(FIND_CREEPS, {
+                filter: c => c.memory.state === STATES.TAKE,
+            }),
+            ...creep.room.find(FIND_STRUCTURES, FIND_FILTERS.storeToStructure(creep)),
+        ]
+
+        // harvesting worker and containers has higher priority
+        let target = creep.pos.findClosestByRange(targets)
+
+        // to prevent from giving energy to a nearly full creep
+        const CREEP_FULL_THRESHOLD = 10
+        if (!target) {
+            console.log(`try find nearest creep to give energy, by ${creep.name}`)
+            target = creep.pos.findClosestByRange(FIND_CREEPS, {
+                filter: c => c.memory.role !== creep.memory.role &&
+                    c.carry.energy < c.carryCapacity - CREEP_FULL_THRESHOLD,
+            })
+        }
+
+        if (target) {
+            creep.say('🔋' + creep.memory.role[0])
+            if (creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                moveTo(creep, target)
+            }
+        } else {
+            console.log(`cannot find a target to store energy, by ${creep.name}`)
+            tryChangeState(creep, STATES.IDLE)
+        }
+    },
+    /**
+     * 
+     * @param {Creep} creep 
+     */
+    [STATES.GO_HOME](creep) {
+        creep.say('🏠' + creep.memory.role[0])
+        moveToHomeAndThen(creep, () => tryChangeState(creep, STATES.IDLE))
+    },
+    /**
+     * 
+     * @param {Creep} creep 
+     */
+    [STATES.LONG_HARVEST](creep) {
+
+        const TARGET_FLAG_COLOR = COLOR_PURPLE
+
+        if (creep.carry.energy < creep.carryCapacity) {
+
+            creep.say('🔄🚞' + creep.memory.role[0])
+
+            // TODO: multiple flags
+            const flag = _.filter(Game.flags, a => a.color === TARGET_FLAG_COLOR)[0]
+            if (flag) {
+
+                if (flag.pos.roomName !== creep.pos.roomName) {
+                    moveTo(creep, flag, '#ffaa00')
+                } else {
+
+                    if (Memory.messageToSign && Memory.messageToSign[creep.room.controller.id]) {
+                        const result = creep.signController(creep.room.controller, Memory.messageToSign[creep.room.controller.id])
+                        if (result === ERR_NOT_IN_RANGE) {
+                            moveTo(creep, creep.room.controller)
+                            return
+                        } else if (result === OK) {
+                            delete Memory.messageToSign[creep.room.controller.id]
+                        }
+                    }
+
+                    const source = creep.pos.findClosestByPath(FIND_SOURCES)
+                    if (source) {
+                        const result = creep.harvest(source)
+                        if (result == ERR_NOT_IN_RANGE) {
+                            moveTo(creep, source, '#ffaa00')
+                        } else if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                            tryChangeState(creep, STATES.IDLE)
+                        }
+                    }
+                }
+            } else {
+                console.log(`cannot find a flag to harvest, flag color needed: ${TARGET_FLAG_COLOR}, by ${creep.name}`)
+                tryChangeState(creep, STATES.IDLE)
+            }
+        } else {
+            tryChangeState(creep, STATES.IDLE)
+        }
+    },
 }
+
+// prevent changing state too much in a tick
+const DISPATCH_RECURSIVE_THRESHOLD = 3
+
+/**
+ * @typedef DispatchOption
+ * @property {number} minDyingTick
+ * @property {Function}
+ */
 
 /**
  * 
  * @param {Creep} creep 
- * @param {Function<Creep, string>} arrangeFunc 
+ * @param {Function} arrangeFunc 
+ * @param {{minDyingTick: number, dyingCallBack: Function, noEnergyCallBack: Function}} option
  */
-function dispatch(creep, arrangeFunc) {
+function dispatch(creep, arrangeFunc, option = {}, recursiveCount = 1) {
 
+    option.minDyingTick = option.minDyingTick || 100
+    // eslint-disable-next-line no-unused-vars
+    option.dyingCallBack = option.dyingCallBack || (creep => STATES.RENEW)
+    // eslint-disable-next-line no-unused-vars
+    option.noEnergyCallBack = option.noEnergyCallBack || (creep => STATES.TAKE)
+
+    ;
     (function () {
-        if (creep.ticksToLive <= 100 && creep.body.length > 3) {
-            tryChangeState(creep, STATES.RENEW)
+        if (creep.ticksToLive <= option.minDyingTick) {
+            tryChangeState(creep, option.dyingCallBack(creep))
             return
         }
         if (creep.carry.energy === 0) {
-            tryChangeState(creep, STATES.TAKE)
+            tryChangeState(creep, option.noEnergyCallBack(creep))
             return
         }
     })()
@@ -216,7 +336,7 @@ function dispatch(creep, arrangeFunc) {
     }
 
     if (creep.memory.state === STATES.IDLE) {
-        tryChangeState(creep, arrangeFunc(creep))
+        tryChangeState(creep, arrangeFunc(creep, DISPATCH_RECURSIVE_THRESHOLD - recursiveCount))
     }
 
     const actionFunc = ACTIONS[creep.memory.state]
@@ -230,8 +350,13 @@ function dispatch(creep, arrangeFunc) {
     actionFunc(creep)
 
     if (creep.memory.state === STATES.IDLE) {
+        if (recursiveCount >= DISPATCH_RECURSIVE_THRESHOLD) {
+            console.log(`reach dispatch recursive limit ${DISPATCH_RECURSIVE_THRESHOLD}, by ${creep.name}`)
+            creep.say('💤' + creep.memory.role[0])
+            return
+        }
         // re-dispatch
-        dispatch(creep, arrangeFunc)
+        dispatch(creep, arrangeFunc, option, recursiveCount + 1)
     }
 }
 

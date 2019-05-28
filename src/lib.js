@@ -24,6 +24,10 @@ const FIND_FILTERS = {
             return structure.hits < structure.hitsMax
         },
     }),
+    storeToStructure: () => ({
+        filter: s => [STRUCTURE_CONTAINER, STRUCTURE_STORAGE].includes(s.structureType) &&
+            _.sum(s.store) < s.storeCapacity,
+    }),
 }
 
 function moveTo(creep, target, stroke = '#ffffff') {
@@ -90,10 +94,7 @@ function adjecentSource(creep) {
  * @param {Funtion} callBack 
  */
 function moveToSpawnAndThen(creep, callBack) {
-    let mySpawn = creep.room.find(FIND_MY_SPAWNS)[0]
-    if (!mySpawn) {
-        mySpawn = Game.spawns[creep.memory.spawn || 'Spawn1']
-    }
+    const mySpawn = findASpawnOfMine(creep)
     if (mySpawn) {
         if (!creep.pos.inRangeTo(mySpawn, SPAWN_RENEW_RATIO)) {
             moveTo(creep, mySpawn, '#00ff00')
@@ -107,6 +108,70 @@ function moveToSpawnAndThen(creep, callBack) {
     }
 }
 
+/**
+ * find my spawn in room, if not found, find who spawn the creep, or the 'Spawn1'
+ * @param {Creep} creep 
+ */
+function findASpawnOfMine(creep) {
+    let mySpawn = creep.room.find(FIND_MY_SPAWNS)[0]
+    if (!mySpawn) {
+        mySpawn = Game.spawns[creep.memory.spawn || 'Spawn1']
+    }
+    return mySpawn
+}
+
+/**
+ * move to the room that creep spawned, then execute the callback
+ * @param {Creep} creep 
+ * @param {Function} callBack 
+ */
+function moveToHomeAndThen(creep, callBack) {
+    const mySpawn = findASpawnOfMine(creep)
+    if (mySpawn) {
+        if (creep.room.name !== mySpawn.room.name) {
+            moveTo(creep, mySpawn, '#00ff00')
+        } else {
+            if (callBack) {
+                callBack()
+            }
+        }
+    } else {
+        console.info('cannot find a spawn, by ', creep.name)
+    }
+}
+
+/**
+ * find the number of creep-reachable area adjcent to the target
+ * @param {RoomPosition|RoomObject} pos 
+ */
+function findAdjcentPassableAreaNumber(pos) {
+    let count = 0
+    for (let adj of adjcentPositionGenerator(pos)) {
+        const items = adj.look()
+        if (items.some(item => item.terrain === 'plain' ||
+                (item.type === LOOK_STRUCTURES && item.structure.structureType === STRUCTURE_ROAD))) {
+            count += 1
+        }
+    }
+    return count
+}
+
+/**
+ * Giving a position, generate all it's adjcent position, including it self
+ * @param {RoomPosition|RoomObject} pos 
+ */
+function* adjcentPositionGenerator(pos) {
+    if (pos instanceof RoomObject) {
+        pos = pos.pos
+    }
+
+    for (let x = pos.x - 1; x <= pos.x + 1; ++x) {
+        for (let y = pos.y - 1; y <= pos.y + 1; ++y) {
+            yield new RoomPosition(x, y, pos.roomName)
+        }
+    }
+}
+
 module.exports = {
     moveToSpawnAndThen,
     moveTo,
@@ -115,4 +180,8 @@ module.exports = {
     renewOrRecycle,
     spawnSay,
     adjecentSource,
+    moveToHomeAndThen,
+    findASpawnOfMine,
+    findAdjcentPassableAreaNumber,
+    adjcentPositionGenerator,
 }

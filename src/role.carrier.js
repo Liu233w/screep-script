@@ -4,6 +4,10 @@ const {
     STATES,
 } = stateMachine
 
+const {
+    FIND_FILTERS,
+} = require('./lib')
+
 function run(creep) {
     stateMachine.dispatch(creep, arrange)
 }
@@ -13,10 +17,23 @@ const spawnStrategy = {
     // TODO: min body repeat number to renew
 }
 
-// eslint-disable-next-line no-unused-vars
-function arrange(creep) {
+/**
+ * 
+ * @param {Creep} creep 
+ */
+function arrange(creep, remainDispatchCount) {
 
-    return STATES.TRANSFER
+    if (remainDispatchCount <= 0) {
+        return STATES.STORE
+    }
+
+    // FIXME: it is always true, why ?
+    if (creep.room.find(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))) {
+        // console.log('try transfer')
+        return STATES.TRANSFER
+    } else {
+        return STATES.STORE
+    }
 }
 
 module.exports = {

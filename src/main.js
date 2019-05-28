@@ -1,7 +1,8 @@
+const lib = require('./lib')
 const {
     bodyCost,
     spawnSay,
-} = require('./lib')
+} = lib
 
 const utils = require('./utils')
 
@@ -37,15 +38,24 @@ module.exports.loop = function () {
     }
 
     try {
-        //ensureCreep('upgrader', 1)
-        ensureCreep('builder', 1, [WORK, CARRY, MOVE])
-        ensureCreep('harvester', 5, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
+        // ensureCreep('upgrader', 1)
+        ensureCreep('builder', 0, [WORK, CARRY, MOVE])
+
+        // TODO: multiple room
+        const harvesterCount = _.reduce(
+            Game.spawns['Spawn1'].room.find(FIND_SOURCES),
+            (sum, curr) => sum + lib.findAdjcentPassableAreaNumber(curr),
+            0)
+        ensureCreep('harvester', harvesterCount + 1, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
+
         ensureCreep('worker', 4, [WORK, CARRY, MOVE])
         ensureCreep('carrier', 4, [CARRY, CARRY, MOVE])
+        let warriorNumber = 0
         if (Game.spawns['Spawn1'].room.find(FIND_HOSTILE_CREEPS).length > 0) {
             console.log('hostile creep in room')
-            ensureCreep('warrior', 1, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
+            warriorNumber = 1
         }
+        ensureCreep('warrior', warriorNumber, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         ensureCreep('longHarvester', 6, [WORK, CARRY, MOVE])
 
     } catch (err) {
@@ -101,6 +111,10 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
     const spawn = Game.spawns['Spawn1']
     const energy = spawn.room.energyAvailable
     const list = _.filter(Game.creeps, creep => creep.memory.role === role && !creep.memory.toDie)
+
+    if (number === 0 && list.length === 0) {
+        return
+    }
 
     if (list.length < number) {
 
@@ -159,6 +173,6 @@ function trySpawn(role, body) {
             spawn: spawn.name,
         },
     })
-    console.log(`trying to spawn creep with body [${body}], result: ${result}`)
+    console.log(`trying to spawn ${role} with body [${body}], result: ${result}`)
     return result
 }
