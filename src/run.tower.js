@@ -5,6 +5,10 @@ const {
 function run() {
 
     for (let name in Game.structures) {
+
+        /**
+         * @type {StructureTower}
+         */
         const item = Game.structures[name]
         if (item.structureType !== STRUCTURE_TOWER) {
             continue
@@ -18,6 +22,13 @@ function run() {
         const closestHostile = item.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
         if (closestHostile) {
             item.attack(closestHostile)
+        }
+
+        const closestDamagedCreep = item.pos.findClosestByRange(FIND_MY_CREEPS, {
+            filter: c => c.hits < c.hitsMax,
+        })
+        if (closestDamagedCreep) {
+            item.heal(closestDamagedCreep)
         }
     }
 }

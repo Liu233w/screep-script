@@ -9,7 +9,9 @@ const {
  */
 function run(creep) {
 
-    if (creep.ticksToLive <= 100 || creep.memory.renewing) {
+    const TARGET_FLAG_COLOR = COLOR_RED
+
+    if (creep.ticksToLive <= 100 || creep.memory.renewing || creep.memory.toDie) {
         creep.say('🔁 renew')
         creep.memory.renewing = true
 
@@ -17,6 +19,18 @@ function run(creep) {
             creep.memory.renewing = false
         } else {
             moveToSpawnAndThen(creep, spawn => renewOrRecycle(spawn, creep))
+            return
+        }
+    }
+
+    if (creep.hits < 100 || creep.memory.healing) {
+        creep.say('😱')
+        creep.memory.healing = true
+
+        if (creep.hits >= creep.hitsMax) {
+            creep.memory.healing = false
+        } else {
+            moveToSpawnAndThen(creep)
             return
         }
     }
@@ -29,19 +43,29 @@ function run(creep) {
         return
     }
 
-    const flag = creep.pos.findClosestByPath(FIND_FLAGS, {
-        filter: flag => flag.color === COLOR_RED,
-    })
-    if (flag) {
+    // TODO: use this one again
 
-        const targets = creep.room.lookForAt(LOOK_STRUCTURES, flag.pos)
-        if (targets.length === 0) {
-            flag.remove()
-        } else {
-            creep.say('⚔ attack')
-            if (creep.attack(targets[0]) === ERR_NOT_IN_RANGE) {
-                moveTo(creep, targets[0])
-            }
+    // let flag = creep.pos.findClosestByPath(FIND_FLAGS, {
+    //     filter: flag => flag.color === TARGET_FLAG_COLOR,
+    // })
+    // if (flag) {
+
+    //     const targets = creep.room.lookForAt(LOOK_STRUCTURES, flag.pos)
+    //     if (targets.length === 0) {
+    //         flag.remove()
+    //     } else {
+    //         creep.say('⚔ attack')
+    //         if (creep.attack(targets[0]) === ERR_NOT_IN_RANGE) {
+    //             moveTo(creep, targets[0])
+    //         }
+    //         return
+    //     }
+    // }
+
+    let flag = _.filter(Game.flags, a => a.color === TARGET_FLAG_COLOR)[0]
+    if (flag) {
+        if (flag.pos.roomName !== creep.pos.roomName) {
+            moveTo(creep, flag, '#ff0000')
             return
         }
     }

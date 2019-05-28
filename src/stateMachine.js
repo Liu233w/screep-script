@@ -189,7 +189,7 @@ const ACTIONS = {
      * @param {Creep} creep 
      */
     [STATES.RENEW](creep) {
-        if (creep.ticksToLive >= 1400) {
+        if (!creep.memory.toDie && creep.ticksToLive >= 1400) {
             tryChangeState(creep, STATES.IDLE)
             return
         }
@@ -432,7 +432,7 @@ function updateStateCount(roomName, role, state, change) {
 }
 
 function getRoleCount(roomName, role) {
-    return Memory.creepRoles[`${roomName}.${role}`]
+    return Memory.creepRoles[`${roomName}.${role}`] || 0
 }
 
 module.exports = {

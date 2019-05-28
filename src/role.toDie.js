@@ -1,3 +1,4 @@
+// TODO: change role name to 'die'
 const stateMachine = require('./stateMachine')
 
 const {

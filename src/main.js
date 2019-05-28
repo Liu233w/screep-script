@@ -54,11 +54,15 @@ module.exports.loop = function () {
         let warriorNumber = 0
         if (Game.spawns['Spawn1'].room.find(FIND_HOSTILE_CREEPS).length > 0) {
             console.log('hostile creep in room')
-            warriorNumber = 1
+            warriorNumber += 1
         }
+        if (Game.rooms['E23N23'] && Game.rooms['E23N23'].find(FIND_HOSTILE_CREEPS).length > 0) {
+            warriorNumber += 1
+        }
+        // FIXME: ensure my room at the same time
         ensureCreep('warrior', warriorNumber, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         // TODO: change number by total body parts
-        ensureCreep('longHarvester', 0, [WORK, CARRY, MOVE])
+        ensureCreep('longHarvester', 5, [WORK, CARRY, MOVE])
 
     } catch (err) {
         errors.push(err)
