@@ -204,6 +204,7 @@ const ACTIONS = {
      */
     [STATES.RENEW](creep) {
         if (!creep.memory.toDie && creep.ticksToLive >= 1400) {
+            console.log(`finish renew, change to IDLE, by ${creep.name}`)
             tryChangeState(creep, STATES.IDLE)
             return
         }
@@ -211,6 +212,7 @@ const ACTIONS = {
         sayWithSufix(creep, '♻')
         moveToSpawnAndThen(creep, spawn => {
             const result = renewOrRecycle(spawn, creep)
+            console.log(`renew result ${result}, by ${creep.name}`)
             if (result === ERR_NOT_ENOUGH_ENERGY) {
                 if (creep.carry.energy > 0) {
                     creep.transfer(spawn, RESOURCE_ENERGY)
