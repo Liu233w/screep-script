@@ -51,12 +51,21 @@ const ACTIONS = {
         if (creep.carry.energy < creep.carryCapacity) {
 
             sayWithSufix(creep, '🔄')
-            const source = creep.pos.findClosestByPath(FIND_SOURCES)
+            const source = creep.pos.findClosestByPath(FIND_SOURCES, {
+                filter: s => s.energy > 0,
+            })
+
+            if (!source) {
+                if (creep.carry.energy > 0) {
+                    tryChangeState(creep, STATES.IDLE)
+                } else {
+                    sayWithSufix(creep, '🔄⚠')
+                }
+            }
+
             const result = creep.harvest(source)
             if (result == ERR_NOT_IN_RANGE) {
                 moveTo(creep, source)
-            } else if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                tryChangeState(creep, STATES.IDLE)
             }
         } else {
             tryChangeState(creep, STATES.IDLE)
@@ -97,8 +106,14 @@ const ACTIONS = {
             if (!best) {
                 // TODO: try to harvest
                 sayWithSufix(creep, '🔌⚠')
-                creep.moveTo(creep.room.find(FIND_MY_SPAWNS)[0])
+                tryChangeState(creep, STATES.IDLE)
+                // creep.moveTo(creep.room.find(FIND_MY_SPAWNS)[0])
                 return
+            }
+
+            if (best.pos.getRangeTo(creep) > 20 && creep.carry.energy >= 100) {
+                console.log(`source target too far, energy enough, by ${creep.name}`)
+                tryChangeState(creep, STATES.IDLE)
             }
 
             let result
@@ -122,6 +137,7 @@ const ACTIONS = {
                 moveTo(creep, best, '#ffaa00')
             } else if (result !== OK) {
                 console.log(`take error: ${result}, by ${creep.name}`)
+                tryChangeState(creep, STATES.IDLE)
             }
         } else {
             tryChangeState(creep, STATES.IDLE)
@@ -277,14 +293,21 @@ const ACTIONS = {
                         }
                     }
 
-                    const source = creep.pos.findClosestByPath(FIND_SOURCES)
-                    if (source) {
-                        const result = creep.harvest(source)
-                        if (result == ERR_NOT_IN_RANGE) {
-                            moveTo(creep, source, '#ffaa00')
-                        } else if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                    const source = creep.pos.findClosestByPath(FIND_SOURCES, {
+                        filter: s => s.energy > 0,
+                    })
+
+                    if (!source) {
+                        if (creep.carry.energy > 0) {
                             tryChangeState(creep, STATES.IDLE)
+                        } else {
+                            sayWithSufix(creep, '🔄⚠')
                         }
+                    }
+
+                    const result = creep.harvest(source)
+                    if (result == ERR_NOT_IN_RANGE) {
+                        moveTo(creep, source, '#ffaa00')
                     }
                 }
             } else {

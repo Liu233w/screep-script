@@ -18,6 +18,7 @@ const roleToFunc = {
     warrior: require('./role.warrior').run,
     longHarvester: require('./role.longHarvester').run,
     carrier: require('./role.carrier').run,
+    toDie: require('./role.toDie').run,
 }
 
 module.exports.loop = function () {
@@ -46,7 +47,7 @@ module.exports.loop = function () {
             Game.spawns['Spawn1'].room.find(FIND_SOURCES),
             (sum, curr) => sum + lib.findAdjcentPassableAreaNumber(curr),
             0)
-        ensureCreep('harvester', harvesterCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE])
+        ensureCreep('harvester', harvesterCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
 
         ensureCreep('worker', 4, [WORK, CARRY, MOVE])
         ensureCreep('carrier', 4, [CARRY, CARRY, MOVE])
@@ -110,7 +111,8 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
 
     const spawn = Game.spawns['Spawn1']
     const energy = spawn.room.energyAvailable
-    const list = _.filter(Game.creeps, creep => creep.memory.role === role && !creep.memory.toDie)
+    /** @type {Creep[]} */
+    const list = _.filter(Game.creeps, creep => creep.memory.role === role)
 
     if (number === 0 && list.length === 0) {
         return
@@ -137,22 +139,39 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
 
     } else {
 
-        const dieList = list.sort((a, b) => bodyCost(a) - bodyCost(b))
+        if (_.any(list, a => a.memory.toDie)) {
+            // already about to kill it, skip
+            return
+        }
+
+        const costFunc = (c) => bodyCost(_.map(c.body, a => a.type))
+
+        const dieList = list.sort((a, b) => {
+            const aC = costFunc(a)
+            const bC = costFunc(b)
+            if (aC - bC === 0) {
+                return a.ticksToLive - b.ticksToLive
+            } else {
+                return aC - bC
+            }
+        })
+        // console.log(JSON.stringify(_.map(dieList, a => bodyCost(_.map(a.body, b => b.type)))))
 
         if (list.length > number) {
             console.log(`too much ${role}, trying to reduce. expect: ${number}, now: ${list.length}`)
             for (let i = 0; i <= list.length - number; ++i) {
-                dieList[i].memory.toDie = true
+                dieList[i].memory.role = 'toDie'
             }
 
             // length == number
         } else {
+
             const oldBody = _.map(dieList[0].body, 'type')
             const newBody = oldBody.concat(...bodyUnit)
             if (repeat && energy >= bodyCost(newBody)) {
                 // kill smallest creep to spawn a bigger one
-                console.log(`kill ${dieList[0].name} to make a better one, old bodyCost: ${bodyCost(oldBody)}, new body parts: ${newBody}`)
-                dieList[0].memory.toDie = true
+                console.log(`kill ${dieList[0].name} to make a better one, old body parts: ${oldBody}, new body parts: ${newBody}`)
+                dieList[0].memory.role = 'toDie'
                 trySpawn(role, newBody)
             }
         }
