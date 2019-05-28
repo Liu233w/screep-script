@@ -42,6 +42,19 @@ function arrange(creep) {
         return STATES.TRANSFER
     }
 
+    // if tower in room, do not use creep to repair
+    const towers = creep.room.find(FIND_STRUCTURES, {
+        filter: s => s.structureType === STRUCTURE_TOWER,
+    })
+    if (towers.length <= 0) {
+        const toRepair = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
+        const repairAmount = utils.sumBy(toRepair, a => a.hitsMax - a.hits)
+        const repairNumber = repairAmount / 500000 // TODO: more precise number ?
+        if (Math.floor(repairNumber) > getWorkerCount(creep.room, STATES.REPAIR)) {
+            return STATES.REPAIR
+        }
+    }
+
     /*
     const toRepair = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
     const repairAmount = utils.sumBy(toRepair, a => a.hitsMax - a.hits)
