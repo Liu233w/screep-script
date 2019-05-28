@@ -59,6 +59,7 @@ const ACTIONS = {
                 if (creep.carry.energy > 0) {
                     tryChangeState(creep, STATES.IDLE)
                 } else {
+                    // TODO: move off the road ?
                     sayWithSufix(creep, '🔄⚠')
                 }
             }
