@@ -2,6 +2,8 @@ const {
     FIND_FILTERS,
 } = require('./lib')
 
+const utils = require('./utils')
+
 const stateMachine = require('./stateMachine')
 
 const {
@@ -40,17 +42,22 @@ function arrange(creep) {
         return STATES.TRANSFER
     }
 
+    /*
     const toRepair = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
-    let repairNumber = toRepair.length
-    // if no tower in room, use more creep to repair
-    if (creep.room.find(FIND_STRUCTURES, {
-            filter: s => s.structureType === STRUCTURE_TOWER,
-        }).length <= 0) {
-        repairNumber *= 2
-    }
-    if (repairNumber > getWorkerCount(creep.room, STATES.REPAIR)) {
+    const repairAmount = utils.sumBy(toRepair, a => a.hitsMax - a.hits)
+    // if tower in room, use less creep to repair
+    const towers = creep.room.find(FIND_STRUCTURES, {
+        filter: s => s.structureType === STRUCTURE_TOWER,
+    })
+    const towerCanRepair = utils.sumBy(towers, a => a.energy) / 0.1
+    const repairNumber = (repairAmount - towerCanRepair) / 5000 // TODO: more precise number ?
+    // console.log(`repairNumber: ${repairNumber}`)
+    // TODO: should i repair structure and road when tower not available ?
+    // may be not. only should we repair wall using creep, see https://github.com/TooAngel/screeps/blob/master/src/role_repairer.js
+    if (Math.floor(repairNumber) > getWorkerCount(creep.room, STATES.REPAIR)) {
         return STATES.REPAIR
     }
+    */
 
     const toBuild = creep.room.find(FIND_CONSTRUCTION_SITES)
     const waitProgress = _.reduce(toBuild, (sum, curr) => sum + (curr.progressTotal - curr.progress), 0)

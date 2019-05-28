@@ -225,7 +225,19 @@ const ACTIONS = {
      * @param {Creep} creep 
      */
     [STATES.REPAIR](creep) {
-        const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
+
+        // try fix some bigger one
+
+        const towers = creep.room.find(FIND_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_TOWER,
+        })
+        let target
+        if (towers.length > 0) {
+            target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(creep, s => s.hitsMax - s.hits > 200))
+        } else {
+            target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
+        }
+
         if (target) {
             sayWithSufix(creep, '🔨')
             if (creep.repair(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {

@@ -8,11 +8,19 @@ const FIND_FILTERS = {
             ) && structure.energy < structure.energyCapacity
         },
     }),
-    repair: locateable => ({
+    /**
+     * @param {RoomObject} locateable
+     * @param {function(Structure):boolean} anding
+     */
+    repair: (locateable, anding) => ({
         filter: structure => {
             if (_.includes(Memory.notRepairIds, structure.id) ||
                 _.find(locateable.room.lookForAt(LOOK_FLAGS, structure.pos), flag => flag.color === COLOR_RED)) {
                 // don't need to repair
+                return false
+            }
+
+            if (anding && !anding(structure)) {
                 return false
             }
 
