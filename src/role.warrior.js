@@ -63,7 +63,8 @@ function run(creep) {
     // }
 
     let flag = _.filter(Game.flags, a => a.color === TARGET_FLAG_COLOR)[0]
-    if (flag) {
+    // FIXME: if a peaceful room are not visible, this may cause bug
+    if (flag && (!flag.room || flag.room.find(FIND_HOSTILE_CREEPS).length > 0)) {
         if (flag.pos.roomName !== creep.pos.roomName) {
             moveTo(creep, flag, '#ff0000')
             return

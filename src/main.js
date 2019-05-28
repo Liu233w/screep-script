@@ -56,10 +56,10 @@ module.exports.loop = function () {
             console.log('hostile creep in room')
             warriorNumber += 1
         }
+        // FIXME: if we cannot see the room ?
         if (Game.rooms['E23N23'] && Game.rooms['E23N23'].find(FIND_HOSTILE_CREEPS).length > 0) {
             warriorNumber += 1
         }
-        // FIXME: ensure my room at the same time
         ensureCreep('warrior', warriorNumber, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         // TODO: change number by total body parts
         ensureCreep('longHarvester', 5, [WORK, CARRY, MOVE])
@@ -117,7 +117,7 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
     const spawn = Game.spawns['Spawn1']
     const energy = spawn.room.energyAvailable
     /** @type {Creep[]} */
-    const list = _.filter(Game.creeps, creep => creep.memory.role === role)
+    const list = _.filter(Game.creeps, creep => creep.memory.role === role || creep.memory.oldRole === role)
 
     if (number === 0 && list.length === 0) {
         return
@@ -165,6 +165,7 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
         if (list.length > number) {
             console.log(`too much ${role}, trying to reduce. expect: ${number}, now: ${list.length}`)
             for (let i = 0; i <= list.length - number; ++i) {
+                dieList[i].memory.oldRole = role
                 dieList[i].memory.role = 'toDie'
             }
 
@@ -176,6 +177,7 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
             if (repeat && energy >= bodyCost(newBody)) {
                 // kill smallest creep to spawn a bigger one
                 console.log(`kill ${dieList[0].name} to make a better one, old body parts: ${oldBody}, new body parts: ${newBody}`)
+                dieList[0].memory.oldRole = role
                 dieList[0].memory.role = 'toDie'
                 trySpawn(role, newBody)
             }

@@ -377,7 +377,7 @@ function dispatch(creep, arrangeFunc, option = {}, recursiveCount = 1) {
 
     if (creep.memory.state === STATES.IDLE) {
         if (recursiveCount >= DISPATCH_RECURSIVE_THRESHOLD) {
-            console.log(`reach dispatch recursive limit ${DISPATCH_RECURSIVE_THRESHOLD}, by ${creep.name}`)
+            // console.log(`reach dispatch recursive limit ${DISPATCH_RECURSIVE_THRESHOLD}, by ${creep.name}`)
             creep.say('💤' + creep.memory.role[0])
             return
         }
