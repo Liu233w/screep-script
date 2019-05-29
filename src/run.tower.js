@@ -13,13 +13,13 @@ function run() {
         if (item.structureType !== STRUCTURE_TOWER) {
             continue
         }
-        
+
         const closestHostile = item.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
         if (closestHostile) {
             item.attack(closestHostile)
             return
         }
-        
+
         const closestDamagedCreep = item.pos.findClosestByRange(FIND_MY_CREEPS, {
             filter: c => c.hits < c.hitsMax,
         })
@@ -28,9 +28,11 @@ function run() {
             return
         }
 
-        const closestDamagedStructure = item.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(item))
-        if (closestDamagedStructure) {
-            item.repair(closestDamagedStructure)
+        const damagedStructures = item.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(item))
+        const repairOrder = _.sortBy(damagedStructures, s => s.hits)
+        //const closestDamagedStructure = item.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(item))
+        if (repairOrder[0]) {
+            item.repair(repairOrder[0])
             return
         }
     }

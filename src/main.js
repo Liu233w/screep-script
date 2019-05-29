@@ -2,6 +2,7 @@ const lib = require('./lib')
 const {
     bodyCost,
     spawnSay,
+    FIND_FILTERS,
 } = lib
 
 const utils = require('./utils')
@@ -62,9 +63,13 @@ module.exports.loop = function () {
         only need 2 harvester per source
         */
 
+        const harvesterCount = stateMachine.getRoleCount(spawn.room.name, 'harvester')
+        const workerCount = stateMachine.getRoleCount(spawn.room.name, 'worker')
+        const longHarvesterCount = stateMachine.getRoleCount(spawn.room.name, 'longHarvester')
+
         const harvesterShouldCount = spawn.room.find(FIND_SOURCES).length * 2 + 1
         let workerShouldCount = 4
-        let carrierShouldCount = stateMachine.getRoleCount(spawn.room.name, 'harvester') + 1
+        let carrierShouldCount = harvesterCount > 0 ? harvesterCount + 1 : 0
 
         let warriorShouldCount = 0
         if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0) {
@@ -76,15 +81,22 @@ module.exports.loop = function () {
             warriorShouldCount += 1
         }
 
-        let longHarvesterShouldCount = 5 - (workerShouldCount - stateMachine.getRoleCount(spawn.room.name, 'worker'))
+        // TODO: store flag color other where ?
+        const longHarvesterBaseCount = _.filter(Game.flags, a => a.color === COLOR_PURPLE)[0] ? 5 : 0
+        let longHarvesterShouldCount = Math.max(0, longHarvesterBaseCount - (workerShouldCount - stateMachine.getRoleCount(spawn.room.name, 'worker')))
 
-        const shouldUpgradeCreep = harvesterShouldCount +
+        let shouldUpgradeCreep = harvesterShouldCount +
             workerShouldCount +
             carrierShouldCount +
             longHarvesterShouldCount <=
-            stateMachine.getRoleCount(spawn.room.name, 'harvester') +
-            stateMachine.getRoleCount(spawn.room.name, 'worker') +
-            stateMachine.getRoleCount(spawn.room.name, 'longHarvester')
+            harvesterCount +
+            workerCount +
+            longHarvesterCount
+
+        // if we haven't finished repairing, dont upgrade
+        if (spawn.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(spawn)).length > 0) {
+            shouldUpgradeCreep = false
+        }
 
         console.log(`should upgrade creep ? ${shouldUpgradeCreep}`)
 

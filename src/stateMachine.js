@@ -24,6 +24,7 @@ const STATES = {
 
 /*
 TODO: add target to memory, will reset when change state. use it as target first
+TODO: add state 'GO_ROOM' can build longHarvester and longBuilder based on it
 */
 
 const ACTIONS = {
