@@ -163,6 +163,8 @@ const ACTIONS = {
      * @param {Creep} creep 
      */
     [STATES.TRANSFER](creep) {
+
+        // TODO: when attacked, transfer to tower first
         const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
         if (target) {
             sayWithSufix(creep, '⚡')
@@ -363,7 +365,7 @@ const DISPATCH_RECURSIVE_THRESHOLD = 3
  * 
  * @param {Creep} creep 
  * @param {Function} arrangeFunc 
- * @param {{minDyingTick: number, dyingCallBack: Function, noEnergyCallBack: Function}} option
+ * @param {{minDyingTick: number, dyingCallBack: function(creep), noEnergyCallBack: function(creep)}} option
  */
 function dispatch(creep, arrangeFunc, option = {}, recursiveCount = 1) {
 

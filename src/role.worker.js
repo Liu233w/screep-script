@@ -11,7 +11,16 @@ const {
 } = stateMachine
 
 function run(creep) {
-    stateMachine.dispatch(creep, arrange)
+    stateMachine.dispatch(creep, arrange, {
+        noEnergyCallBack: creep => {
+            const harvesterCount = stateMachine.getRoleCount(creep.room.name, 'harvester')
+            if (harvesterCount <= 0) {
+                return STATES.HARVEST
+            } else {
+                return STATES.TAKE
+            }
+        },
+    })
 }
 
 const spawnStrategy = {
@@ -25,7 +34,7 @@ const spawnStrategy = {
  */
 function arrange(creep) {
 
-    if (getWorkerCount(creep.room, STATES.UPGRADE) < 1) {
+    if (stateMachine.getRoleCount(creep.room, 'worker') > 1 && getWorkerCount(creep.room, STATES.UPGRADE) < 1) {
         return STATES.UPGRADE
     }
 

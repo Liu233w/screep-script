@@ -39,6 +39,9 @@ module.exports.loop = function () {
     }
 
     try {
+
+        const spawn = Game.spawns['Spawn1']
+
         // ensureCreep('upgrader', 1)
         ensureCreep('builder', 0, [WORK, CARRY, MOVE])
 
@@ -60,22 +63,29 @@ module.exports.loop = function () {
         */
 
         // TODO: if i can set the target of a harvester, then dont need '+1'
-        ensureCreep('harvester', Game.spawns['Spawn1'].room.find(FIND_SOURCES).length * 2 + 1, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
+        const harvesterCount = Game.spawns['Spawn1'].room.find(FIND_SOURCES).length * 2 + 1
+        ensureCreep('harvester', harvesterCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
 
-        ensureCreep('worker', 4, [WORK, CARRY, MOVE])
-        ensureCreep('carrier', 4, [CARRY, CARRY, MOVE])
-        let warriorNumber = 0
-        if (Game.spawns['Spawn1'].room.find(FIND_HOSTILE_CREEPS).length > 0) {
+        let workerCount = 4
+        ensureCreep('worker', workerCount, [WORK, CARRY, MOVE])
+
+        let carrierCount = stateMachine.getRoleCount(spawn.room.name, 'harvester') + 1
+        ensureCreep('carrier', carrierCount, [CARRY, CARRY, MOVE])
+
+        let warriorCount = 0
+        if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0) {
             console.log('hostile creep in room')
-            warriorNumber += 1
+            warriorCount += 1
         }
         // FIXME: if we cannot see the room ?
         if (Game.rooms['E23N23'] && Game.rooms['E23N23'].find(FIND_HOSTILE_CREEPS).length > 0) {
-            warriorNumber += 1
+            warriorCount += 1
         }
-        ensureCreep('warrior', warriorNumber, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
+        ensureCreep('warrior', warriorCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
+
         // TODO: change number by total body parts
-        ensureCreep('longHarvester', 5, [WORK, CARRY, MOVE])
+        let longHarvesterCount = 5 - (workerCount - stateMachine.getRoleCount(spawn.room.name, 'worker'))
+        ensureCreep('longHarvester', longHarvesterCount, [WORK, CARRY, MOVE])
 
     } catch (err) {
         errors.push(err)
