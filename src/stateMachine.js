@@ -28,6 +28,41 @@ TODO: add state 'GO_ROOM' can build longHarvester and longBuilder based on it
 TODO: take distance into consideration when arrange job
 */
 
+/*
+TODO: replace state machine system with job system
+- every creep has a job list, use [].push to add a job, and [].shift to remove a job
+- a job can execute multiple ticks, so a job action(aka state action) can decide if we should pop a job
+- arrange system can add multiple job at the same time, (can it access the job list?), 
+for example, a long harvest mission can be a combination of 'GO_ROOM' and 'HARVEST', which can be arranged at the same time
+- a job list is like this: [{job: 'GO_ROOM', target: 'N23E23'},{job: 'HARVEST', target: 'sfdsfdsfa(id)'},{job:'aaa',target {can:'use object'}}]
+- replace previous 'noEnergyCallBack' staff with 'tickFunction', which is function being executed every tick, call it with creep object and
+job list. it can change the list (or overwrite it), eg: when running out of energy or not enough lifetime or low hitpoint, set the list (interrupt current job)
+immediately.
+- after the 'tickFunction', if job list is empty, use arrange func to add new jobs, if still empty, say 💤, (or trigger a hook?)
+- arrangeFunction can add a special 'IDLE' (or 'SPARE' ?) job to the beginning of the list, means creep didn't do anything in this tick, let job system do the
+next job or re-arrange a new one.
+- re-arrange count limit is still there, only calling arrange function will increase it 
+(eg. a list with ['HARVEST'] changed to ['IDLE'], then arrange function change it to ['HARVEST'], then changed to ['IDLE'] ...)
+
+TO SOLVE: how can i arrange worker's job by checking what others are doing?
+
+not arrange a single creep, but a list of creep with same role.
+
+function arrange(creepsNeedToArrange: Creep[], AllCreeps: Creep[]) {
+    
+    creep1 = ...
+    const jobList = getJobList(creep1)
+    jobList.push({...})
+}
+
+by that way, we can still access to memory.creepRoles
+but memory.creepStates are not available
+
+add util functions like currentJob(Creep): Job, haveJob(Creep): boolean, ...
+to get other role's state and arrange worker's job
+
+*/
+
 const ACTIONS = {
     /**
      * 
@@ -218,7 +253,7 @@ const ACTIONS = {
      */
     [STATES.RENEW](creep) {
         if (!creep.memory.toDie && creep.ticksToLive >= 1400) {
-            console.log(`finish renew, change to IDLE, by ${creep.name}`)
+            // console.log(`finish renew, change to IDLE, by ${creep.name}`)
             tryChangeState(creep, STATES.IDLE)
             return
         }
@@ -226,7 +261,7 @@ const ACTIONS = {
         sayWithSufix(creep, '♻')
         moveToSpawnAndThen(creep, spawn => {
             const result = renewOrRecycle(spawn, creep)
-            console.log(`renew result ${result}, by ${creep.name}`)
+            // console.log(`renew result ${result}, by ${creep.name}`)
             if (result === ERR_NOT_ENOUGH_ENERGY) {
                 if (creep.carry.energy > 0) {
                     creep.transfer(spawn, RESOURCE_ENERGY)
@@ -381,6 +416,11 @@ const DISPATCH_RECURSIVE_THRESHOLD = 3
  */
 function dispatch(creep, arrangeFunc, option = {}, recursiveCount = 1) {
 
+    // creep is still spawning
+    if (creep.spawning) {
+        return
+    }
+
     option.minDyingTick = option.minDyingTick || 100
     // eslint-disable-next-line no-unused-vars
     option.dyingCallBack = option.dyingCallBack || (creep => STATES.RENEW)
@@ -393,6 +433,7 @@ function dispatch(creep, arrangeFunc, option = {}, recursiveCount = 1) {
             tryChangeState(creep, option.dyingCallBack(creep))
             return
         }
+        // FIXME: if creep donot have CARRY, it is null, so the condition is always false
         if (creep.carry.energy === 0) {
             tryChangeState(creep, option.noEnergyCallBack(creep))
             return
@@ -444,8 +485,10 @@ function tryChangeState(creep, newState, target = null) {
 
     // callback functions ...
     // TODO: optimise
-    updateStateCount(creep.room.name, creep.memory.role, oldState, -1)
-    updateStateCount(creep.room.name, creep.memory.role, newState, +1)
+    updateRoleStateCount(creep.memory.spawn, creep.memory.role, oldState, -1)
+    updateRoleStateCount(creep.memory.spawn, creep.memory.role, newState, +1)
+    updateStateCount(creep.memory.spawn, oldState, -1)
+    updateStateCount(creep.memory.spawn, newState, +1)
 
     creep.memory.target = target
 
@@ -455,26 +498,39 @@ function tryChangeState(creep, newState, target = null) {
 }
 
 function global() {
-    const creepStates = _.countBy(Game.creeps, c => `${c.room.name}.${c.memory.role}.${c.memory.state}`)
-    const creepRoles = _.countBy(Game.creeps, c => `${c.room.name}.${c.memory.role}`)
+    const creepRoleStates = _.countBy(Game.creeps, c => `${c.memory.spawn}.${c.memory.role}.${c.memory.state}`)
+    const creepRoles = _.countBy(Game.creeps, c => `${c.memory.spawn}.${c.memory.role}`)
+    const creepStates = _.countBy(Game.creeps, c => `${c.memory.spawn}.${c.memory.state}`)
+    Memory.creepRoleStates = creepRoleStates
     Memory.creepStates = creepStates
     Memory.creepRoles = creepRoles
 }
 
-function getStateCount(roomName, role, state) {
-    const key = `${roomName}.${role}.${state}`
+function getRoleStateCount(spawnName, role, state) {
+    const key = `${spawnName}.${role}.${state}`
     // console.log('key', key)
+    return Memory.creepRoleStates[key] || 0
+}
+
+function updateRoleStateCount(spawnName, role, state, change) {
+    const key = `${spawnName}.${role}.${state}`
+    const orig = Memory.creepRoleStates[key] || 0
+    Memory.creepRoleStates[key] = orig + change
+}
+
+function getRoleCount(spawnName, role) {
+    return Memory.creepRoles[`${spawnName}.${role}`] || 0
+}
+
+function getStateCount(spawnName, state) {
+    const key = `${spawnName}.${state}`
     return Memory.creepStates[key] || 0
 }
 
-function updateStateCount(roomName, role, state, change) {
-    const key = `${roomName}.${role}.${state}`
+function updateStateCount(spawnName, state, change) {
+    const key = `${spawnName}.${state}`
     const orig = Memory.creepStates[key] || 0
     Memory.creepStates[key] = orig + change
-}
-
-function getRoleCount(roomName, role) {
-    return Memory.creepRoles[`${roomName}.${role}`] || 0
 }
 
 module.exports = {
@@ -482,6 +538,7 @@ module.exports = {
     dispatch,
     ACTIONS,
     global,
-    getStateCount,
+    getRoleStateCount,
     getRoleCount,
+    getStateCount,
 }

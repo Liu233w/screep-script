@@ -63,10 +63,10 @@ module.exports.loop = function () {
         only need 2 harvester per source
         */
 
-        const harvesterCount = stateMachine.getRoleCount(spawn.room.name, 'harvester')
-        const workerCount = stateMachine.getRoleCount(spawn.room.name, 'worker')
-        const longHarvesterCount = stateMachine.getRoleCount(spawn.room.name, 'longHarvester')
-        const carrierCount = stateMachine.getRoleCount(spawn.room.name, 'carrier')
+        const harvesterCount = stateMachine.getRoleCount(spawn.name, 'harvester')
+        const workerCount = stateMachine.getRoleCount(spawn.name, 'worker')
+        const longHarvesterCount = stateMachine.getRoleCount(spawn.name, 'longHarvester')
+        const carrierCount = stateMachine.getRoleCount(spawn.name, 'carrier')
 
         // TODO: if i can set the target of a harvester, then dont need '+1'
         const harvesterShouldCount = spawn.room.find(FIND_SOURCES).length * 2 + 1
@@ -86,7 +86,7 @@ module.exports.loop = function () {
         // TODO: store flag color other where ?
         const longHarvesterBaseCount = _.filter(Game.flags, a => a.color === COLOR_PURPLE)[0] ? 5 : 0
         // TODO: change number by total body parts
-        let longHarvesterShouldCount = Math.max(0, longHarvesterBaseCount - (workerShouldCount - stateMachine.getRoleCount(spawn.room.name, 'worker')))
+        let longHarvesterShouldCount = Math.max(0, longHarvesterBaseCount - (workerShouldCount - workerCount))
 
         let shouldUpgradeCreep =
             harvesterShouldCount +
@@ -102,13 +102,17 @@ module.exports.loop = function () {
         if (spawn.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(spawn)).length > 0) {
             shouldUpgradeCreep = false
         }
-        // TODO: if room contains creep need to repair, dont upgrade
+        // if room contains creep need to renew, dont upgrade
+        if (stateMachine.getStateCount(spawn.name, stateMachine.STATES.RENEW) > 0) {
+            shouldUpgradeCreep = false
+        }
 
-        console.log(`should upgrade creep ? ${shouldUpgradeCreep}`)
+        // console.log(`should upgrade creep ? ${shouldUpgradeCreep}`)
 
+        // TODO: try re-order body parts, put MOVE and CARRY to back
         ensureCreep('harvester', harvesterShouldCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
         ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
-        ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], shouldUpgradeCreep)
+        ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 2)
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
 
@@ -159,8 +163,9 @@ module.exports.loop = function () {
  * @param {number} number 
  * @param {string[]} bodyUnit 
  * @param {boolean} repeat can body be repeated to build a larger one
+ * @param {number|null} maxRepeat max repeat time of a creep, if null or 0, means repeat any times
  */
-function ensureCreep(role, number, bodyUnit, repeat = true) {
+function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null) {
 
     const spawn = Game.spawns['Spawn1']
     const energy = spawn.room.energyAvailable
@@ -181,7 +186,7 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
             do {
                 body = newBody
                 newBody = utils.repeatArray(bodyUnit, ++repeat)
-            } while (bodyCost(newBody) <= energy)
+            } while (bodyCost(newBody) <= energy && (!maxRepeat || repeat <= maxRepeat))
             // biggest repeat of body
 
             trySpawn(role, body)
@@ -222,6 +227,11 @@ function ensureCreep(role, number, bodyUnit, repeat = true) {
         } else {
 
             const oldBody = _.map(dieList[0].body, 'type')
+            if (maxRepeat && oldBody.length >= bodyUnit.length * maxRepeat) {
+                // reached max repeat limit, do not spawn bigger one
+                return
+            }
+
             const newBody = oldBody.concat(...bodyUnit)
             if (repeat && energy >= bodyCost(newBody)) {
                 // kill smallest creep to spawn a bigger one

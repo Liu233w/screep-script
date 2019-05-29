@@ -26,9 +26,9 @@ function noEnergyCallBack(creep) {
 
     // TODO: too tight here ?
     // try save role should count in memory ?
-    const harvesterCount = stateMachine.getRoleCount(creep.room.name, 'harvester')
+    const harvesterCount = stateMachine.getRoleCount(creep.memory.spawn, 'harvester')
     const harvesterShouldCount = creep.room.find(FIND_SOURCES).length * 2 + 1
-    if (harvesterCount + stateMachine.getStateCount(creep.room.name, 'worker', STATES.HARVEST) < harvesterShouldCount) {
+    if (harvesterCount + stateMachine.getRoleStateCount(creep.memory.spawn, 'worker', STATES.HARVEST) < harvesterShouldCount) {
         return STATES.HARVEST
     } else {
         return STATES.TAKE
@@ -46,7 +46,8 @@ const spawnStrategy = {
  */
 function arrange(creep) {
 
-    if (stateMachine.getRoleCount(creep.room, 'worker') > 1 && getWorkerCount(creep.room, STATES.UPGRADE) < 1) {
+    // TODO: how about sending worker to other rooms ?
+    if (stateMachine.getRoleCount(creep.memory.spawn, 'worker') > 1 && getWorkerCount(creep, STATES.UPGRADE) < 1) {
         return STATES.UPGRADE
     }
 
@@ -73,7 +74,7 @@ function arrange(creep) {
         const toRepair = creep.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(creep))
         const repairAmount = utils.sumBy(toRepair, a => a.hitsMax - a.hits)
         const repairNumber = repairAmount / 500000 // TODO: more precise number ?
-        if (Math.floor(repairNumber) > getWorkerCount(creep.room, STATES.REPAIR)) {
+        if (Math.floor(repairNumber) > getWorkerCount(creep, STATES.REPAIR)) {
             return STATES.REPAIR
         }
     }
@@ -90,7 +91,7 @@ function arrange(creep) {
     // console.log(`repairNumber: ${repairNumber}`)
     // TODO: should i repair structure and road when tower not available ?
     // may be not. only should we repair wall using creep, see https://github.com/TooAngel/screeps/blob/master/src/role_repairer.js
-    if (Math.floor(repairNumber) > getWorkerCount(creep.room, STATES.REPAIR)) {
+    if (Math.floor(repairNumber) > getWorkerCount(creep, STATES.REPAIR)) {
         return STATES.REPAIR
     }
     */
@@ -99,7 +100,7 @@ function arrange(creep) {
     const waitProgress = _.reduce(toBuild, (sum, curr) => sum + (curr.progressTotal - curr.progress), 0)
     const buildNumber = Math.ceil(waitProgress / 5000)
     // console.log(`progress wait to build: ${waitProgress}, builder number: ${buildNumber}`)
-    if (buildNumber > getWorkerCount(creep.room, STATES.BUILD)) {
+    if (buildNumber > getWorkerCount(creep, STATES.BUILD)) {
         return STATES.BUILD
     }
 
@@ -108,11 +109,11 @@ function arrange(creep) {
 
 /**
  * 
- * @param {Room} room 
+ * @param {Creep} creep
  * @param {String} state 
  */
-function getWorkerCount(room, state) {
-    const stateCount = stateMachine.getStateCount(room.name, 'worker', state)
+function getWorkerCount(creep, state) {
+    const stateCount = stateMachine.getRoleStateCount(creep.memory.spawn, 'worker', state)
     // console.log(`state count: ${stateCount}`)
     return stateCount
 }
