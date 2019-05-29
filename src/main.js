@@ -235,7 +235,9 @@ function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null) {
             const newBody = oldBody.concat(...bodyUnit)
             if (repeat && energy >= bodyCost(newBody)) {
                 // kill smallest creep to spawn a bigger one
-                console.log(`kill ${dieList[0].name} to make a better one, old body parts: ${oldBody}, new body parts: ${newBody}`)
+                const message = `kill ${dieList[0].name} to make a better one, old body parts: ${oldBody}, new body parts: ${newBody}, role: ${dieList[0].memory.role}`
+                Game.notify(message, 60)
+                console.log(message)
                 dieList[0].memory.oldRole = role
                 dieList[0].memory.role = 'toDie'
                 trySpawn(role, newBody)

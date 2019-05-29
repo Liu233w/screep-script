@@ -61,6 +61,9 @@ but memory.creepStates are not available
 add util functions like currentJob(Creep): Job, haveJob(Creep): boolean, ...
 to get other role's state and arrange worker's job
 
+a job action is really simple, only work on a target rather than others
+provide many util function like 'find closest source or taking target' to use them in many roles
+
 */
 
 const ACTIONS = {
@@ -110,6 +113,7 @@ const ACTIONS = {
                 } else {
                     // TODO: move off the road ?
                     // TODO: try changing role temporary when source refreshing time is too long ?
+                    //       can change to a longHarvester ? (may be move too slow)
                     sayWithSufix(creep, '🔄⚠')
                 }
             }
