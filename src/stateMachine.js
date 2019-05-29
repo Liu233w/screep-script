@@ -25,6 +25,7 @@ const STATES = {
 /*
 TODO: add target to memory, will reset when change state. use it as target first
 TODO: add state 'GO_ROOM' can build longHarvester and longBuilder based on it
+TODO: take distance into consideration when arrange job
 */
 
 const ACTIONS = {
@@ -241,7 +242,7 @@ const ACTIONS = {
      */
     [STATES.REPAIR](creep) {
 
-        // try fix some bigger one
+        // TODO: try fix some bigger damaged one, sorted by damaged point
 
         const towers = creep.room.find(FIND_STRUCTURES, {
             filter: s => s.structureType === STRUCTURE_TOWER,

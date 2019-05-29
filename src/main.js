@@ -66,7 +66,9 @@ module.exports.loop = function () {
         const harvesterCount = stateMachine.getRoleCount(spawn.room.name, 'harvester')
         const workerCount = stateMachine.getRoleCount(spawn.room.name, 'worker')
         const longHarvesterCount = stateMachine.getRoleCount(spawn.room.name, 'longHarvester')
+        const carrierCount = stateMachine.getRoleCount(spawn.room.name, 'carrier')
 
+        // TODO: if i can set the target of a harvester, then dont need '+1'
         const harvesterShouldCount = spawn.room.find(FIND_SOURCES).length * 2 + 1
         let workerShouldCount = 4
         let carrierShouldCount = harvesterCount > 0 ? harvesterCount + 1 : 0
@@ -83,36 +85,31 @@ module.exports.loop = function () {
 
         // TODO: store flag color other where ?
         const longHarvesterBaseCount = _.filter(Game.flags, a => a.color === COLOR_PURPLE)[0] ? 5 : 0
+        // TODO: change number by total body parts
         let longHarvesterShouldCount = Math.max(0, longHarvesterBaseCount - (workerShouldCount - stateMachine.getRoleCount(spawn.room.name, 'worker')))
 
-        let shouldUpgradeCreep = harvesterShouldCount +
+        let shouldUpgradeCreep =
+            harvesterShouldCount +
             workerShouldCount +
             carrierShouldCount +
             longHarvesterShouldCount <=
             harvesterCount +
             workerCount +
-            longHarvesterCount
+            longHarvesterCount +
+            carrierCount
 
         // if we haven't finished repairing, dont upgrade
         if (spawn.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(spawn)).length > 0) {
             shouldUpgradeCreep = false
         }
+        // TODO: if room contains creep need to repair, dont upgrade
 
         console.log(`should upgrade creep ? ${shouldUpgradeCreep}`)
 
-        // TODO: if i can set the target of a harvester, then dont need '+1'
         ensureCreep('harvester', harvesterShouldCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
-
-        // TODO: don't make better creep until all other roles are all maked
         ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
-
-
         ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], shouldUpgradeCreep)
-
-
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
-
-        // TODO: change number by total body parts
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
 
     } catch (err) {

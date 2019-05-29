@@ -65,6 +65,7 @@ function arrange(creep) {
     }
 
     // if tower in room, do not use creep to repair
+    // TODO: when badly damaged structure occured, still to rapair no matter if tower exists
     const towers = creep.room.find(FIND_STRUCTURES, {
         filter: s => s.structureType === STRUCTURE_TOWER,
     })
