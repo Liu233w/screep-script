@@ -29,6 +29,10 @@ TODO: take distance into consideration when arrange job
 */
 
 /*
+TODO: hostile creep will drop resources, take that into consideration
+*/
+
+/*
 TODO: replace state machine system with job system
 - every creep has a job list, use [].push to add a job, and [].shift to remove a job
 - a job can execute multiple ticks, so a job action(aka state action) can decide if we should pop a job

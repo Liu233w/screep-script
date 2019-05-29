@@ -188,6 +188,18 @@ function sayWithSufix(creep, message) {
     creep.say(message + creep.memory.role[0] + creep.name[creep.name.length - 1] + (creep.memory.toDie ? '💀' : ''), true)
 }
 
+/**
+ * 
+ * @param {Creep} creep 
+ * @param {RoomObject} target 
+ * @param {function(Creep, RoomObject): CreepActionReturnCode} callBack 
+ */
+function moveToAndThen(creep, target, callBack) {
+    if (callBack(creep, target) === ERR_NOT_IN_RANGE) {
+        creep.moveTo(target)
+    }
+}
+
 module.exports = {
     moveToSpawnAndThen,
     moveTo,
@@ -201,4 +213,5 @@ module.exports = {
     findAdjcentPassableAreaNumber,
     adjcentPositionGenerator,
     sayWithSufix,
+    moveToAndThen,
 }

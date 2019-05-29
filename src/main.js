@@ -20,6 +20,8 @@ const roleToFunc = {
     longHarvester: require('./role.longHarvester').run,
     carrier: require('./role.carrier').run,
     toDie: require('./role.toDie').run,
+    userControl: require('./role.userControl').run,
+    tombstoneCollector: require('./role.tombstoneCollector').run,
 }
 
 module.exports.loop = function () {
@@ -71,7 +73,7 @@ module.exports.loop = function () {
         // TODO: if i can set the target of a harvester, then dont need '+1'
         const harvesterShouldCount = spawn.room.find(FIND_SOURCES).length * 2 + 1
         let workerShouldCount = 4
-        let carrierShouldCount = harvesterCount > 0 ? harvesterCount + 1 : 0
+        let carrierShouldCount = harvesterCount
 
         let warriorShouldCount = 0
         if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0) {
@@ -84,7 +86,7 @@ module.exports.loop = function () {
         }
 
         // TODO: store flag color other where ?
-        const longHarvesterBaseCount = _.filter(Game.flags, a => a.color === COLOR_PURPLE)[0] ? 5 : 0
+        const longHarvesterBaseCount = _.filter(Game.flags, a => a.color === COLOR_PURPLE)[0] ? 4 : 0
         // TODO: change number by total body parts
         let longHarvesterShouldCount = Math.max(0, longHarvesterBaseCount - (workerShouldCount - workerCount))
 
@@ -114,7 +116,18 @@ module.exports.loop = function () {
         ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
         ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 2)
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
-        ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
+        ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep)
+
+        if (spawn.room.find(FIND_TOMBSTONES, {
+                filter: t => t.creep.owner.username === 'Invader',
+            })[0]) {
+
+            Game.notify('a invaders tombstone has occured', 60)
+
+            // do not remove old tomb collectors if no tomb exists
+            ensureCreep('tombstoneCollector', 1, [CARRY, MOVE], false)
+            console.log('spawning tomb collector')
+        }
 
     } catch (err) {
         errors.push(err)
@@ -164,8 +177,9 @@ module.exports.loop = function () {
  * @param {string[]} bodyUnit 
  * @param {boolean} repeat can body be repeated to build a larger one
  * @param {number|null} maxRepeat max repeat time of a creep, if null or 0, means repeat any times
+ * @param {{doNotKill: boolean|undefined}} options
  */
-function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null) {
+function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null, options = {}) {
 
     const spawn = Game.spawns['Spawn1']
     const energy = spawn.room.energyAvailable
@@ -178,6 +192,15 @@ function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null) {
 
     if (list.length < number) {
 
+        let spawnMemory
+        if (options.doNotKill) {
+            spawnMemory = {
+                doNotKill: true,
+            }
+        } else {
+            spawnMemory = {}
+        }
+
         if (repeat) {
 
             let body = bodyUnit
@@ -189,16 +212,17 @@ function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null) {
             } while (bodyCost(newBody) <= energy && (!maxRepeat || repeat <= maxRepeat))
             // biggest repeat of body
 
-            trySpawn(role, body)
+            trySpawn(role, body, spawnMemory)
 
         } else {
-            trySpawn(role, bodyUnit)
+            trySpawn(role, bodyUnit, spawnMemory)
         }
 
     } else {
 
-        if (_.any(list, a => a.memory.toDie)) {
-            // already about to kill it, skip
+        if (_.any(list, a => a.memory.toDie || a.memory.doNotKill)) {
+            // already about to kill it or dont want to kill it, skip
+            // TODO: what if only one creep dont want to kill while other roles are killable ?
             return
         }
 
