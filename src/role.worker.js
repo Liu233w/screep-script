@@ -12,15 +12,27 @@ const {
 
 function run(creep) {
     stateMachine.dispatch(creep, arrange, {
-        noEnergyCallBack: creep => {
-            const harvesterCount = stateMachine.getRoleCount(creep.room.name, 'harvester')
-            if (harvesterCount <= 0) {
-                return STATES.HARVEST
-            } else {
-                return STATES.TAKE
-            }
-        },
+        noEnergyCallBack,
     })
+}
+
+function noEnergyCallBack(creep) {
+    const tombStone = creep.pos.findClosestByRange(FIND_TOMBSTONES, {
+        filter: t => t.store.energy > 0 && t.pos.getRangeTo(creep) < 20,
+    })
+    if (tombStone && tombStone.length > 0) {
+        return STATES.TAKE
+    }
+
+    // TODO: too tight here ?
+    // try save role should count in memory ?
+    const harvesterCount = stateMachine.getRoleCount(creep.room.name, 'harvester')
+    const harvesterShouldCount = creep.room.find(FIND_SOURCES).length * 2 + 1
+    if (harvesterCount + stateMachine.getStateCount(creep.room.name, 'worker', STATES.HARVEST) < harvesterShouldCount) {
+        return STATES.HARVEST
+    } else {
+        return STATES.TAKE
+    }
 }
 
 const spawnStrategy = {
@@ -44,7 +56,8 @@ function arrange(creep) {
      */
     const transferEnergy = _.reduce(toTransfer, (sum, curr) => sum + (curr.energyCapacity - curr.energy), 0)
     const carrierMaxEnergy = _.reduce(creep.room.find(FIND_MY_CREEPS, {
-        filter: c => c.memory.role === 'carrier',
+        // IDLE carrier means it cannot find a place to take energy
+        filter: c => c.memory.role === 'carrier' && c.memory.state !== STATES.IDLE,
     }), (sum, curr) => sum + curr.carryCapacity, 0)
     if (transferEnergy > carrierMaxEnergy + creep.carryCapacity) {
         console.log(`doing carrier's job, need energy ${transferEnergy}, while carriers' capacity ${carrierMaxEnergy}`)

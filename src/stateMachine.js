@@ -164,8 +164,18 @@ const ACTIONS = {
      */
     [STATES.TRANSFER](creep) {
 
-        // TODO: when attacked, transfer to tower first
-        const target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
+        let target
+        // when attacked, transfer to tower first
+        if (creep.room.find(FIND_HOSTILE_CREEPS).length > 0) {
+            target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+                filter: s => s.structureType === STRUCTURE_TOWER,
+            })
+        }
+
+        if (!target) {
+            target = creep.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.transfer(creep))
+        }
+
         if (target) {
             sayWithSufix(creep, '⚡')
             // TODO: if a working target have a nearly full energy, don not transfer to it, because it's too slow

@@ -62,30 +62,46 @@ module.exports.loop = function () {
         only need 2 harvester per source
         */
 
-        // TODO: if i can set the target of a harvester, then dont need '+1'
-        const harvesterCount = Game.spawns['Spawn1'].room.find(FIND_SOURCES).length * 2 + 1
-        ensureCreep('harvester', harvesterCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
+        const harvesterShouldCount = spawn.room.find(FIND_SOURCES).length * 2 + 1
+        let workerShouldCount = 4
+        let carrierShouldCount = stateMachine.getRoleCount(spawn.room.name, 'harvester') + 1
 
-        let workerCount = 4
-        ensureCreep('worker', workerCount, [WORK, CARRY, MOVE])
-
-        let carrierCount = stateMachine.getRoleCount(spawn.room.name, 'harvester') + 1
-        ensureCreep('carrier', carrierCount, [CARRY, CARRY, MOVE])
-
-        let warriorCount = 0
+        let warriorShouldCount = 0
         if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0) {
             console.log('hostile creep in room')
-            warriorCount += 1
+            warriorShouldCount += 1
         }
         // FIXME: if we cannot see the room ?
         if (Game.rooms['E23N23'] && Game.rooms['E23N23'].find(FIND_HOSTILE_CREEPS).length > 0) {
-            warriorCount += 1
+            warriorShouldCount += 1
         }
-        ensureCreep('warrior', warriorCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
+
+        let longHarvesterShouldCount = 5 - (workerShouldCount - stateMachine.getRoleCount(spawn.room.name, 'worker'))
+
+        const shouldUpgradeCreep = harvesterShouldCount +
+            workerShouldCount +
+            carrierShouldCount +
+            longHarvesterShouldCount <=
+            stateMachine.getRoleCount(spawn.room.name, 'harvester') +
+            stateMachine.getRoleCount(spawn.room.name, 'worker') +
+            stateMachine.getRoleCount(spawn.room.name, 'longHarvester')
+
+        console.log(`should upgrade creep ? ${shouldUpgradeCreep}`)
+
+        // TODO: if i can set the target of a harvester, then dont need '+1'
+        ensureCreep('harvester', harvesterShouldCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
+
+        // TODO: don't make better creep until all other roles are all maked
+        ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
+
+
+        ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], shouldUpgradeCreep)
+
+
+        ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
 
         // TODO: change number by total body parts
-        let longHarvesterCount = 5 - (workerCount - stateMachine.getRoleCount(spawn.room.name, 'worker'))
-        ensureCreep('longHarvester', longHarvesterCount, [WORK, CARRY, MOVE])
+        ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
 
     } catch (err) {
         errors.push(err)
