@@ -57,6 +57,11 @@ function arrange(creepsNeedToArrange: Creep[], AllCreeps: Creep[]) {
     creep1 = ...
     const jobList = getJobList(creep1)
     jobList.push({...})
+    // or
+    scheduleJob(creep, JOBS.HARVEST, {...(optional target)}) // to the end of queue
+    pushJob(creep, JOBS.RENEW, ...) // to the front of the queue
+    const {job, target} = popJob(creep) // remove a job from front
+    const ... = pickJob(creep) // see the job from front
 }
 
 by that way, we can still access to memory.creepRoles
@@ -68,6 +73,7 @@ to get other role's state and arrange worker's job
 a job action is really simple, only work on a target rather than others
 provide many util function like 'find closest source or taking target' to use them in many roles
 
+do not pre-define dying and no energy strategy, let each role use tickFunction do that
 */
 
 const ACTIONS = {
@@ -369,16 +375,6 @@ const ACTIONS = {
                 if (flag.pos.roomName !== creep.pos.roomName) {
                     moveTo(creep, flag, '#ffaa00')
                 } else {
-
-                    if (Memory.messageToSign && Memory.messageToSign[creep.room.controller.id]) {
-                        const result = creep.signController(creep.room.controller, Memory.messageToSign[creep.room.controller.id])
-                        if (result === ERR_NOT_IN_RANGE) {
-                            moveTo(creep, creep.room.controller)
-                            return
-                        } else if (result === OK) {
-                            delete Memory.messageToSign[creep.room.controller.id]
-                        }
-                    }
 
                     const source = creep.pos.findClosestByPath(FIND_SOURCES, {
                         filter: s => s.energy > 0,

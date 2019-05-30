@@ -22,6 +22,7 @@ const roleToFunc = {
     toDie: require('./role.toDie').run,
     userControl: require('./role.userControl').run,
     tombstoneCollector: require('./role.tombstoneCollector').run,
+    claimer: require('./role.claimer').run,
 }
 
 module.exports.loop = function () {
@@ -90,6 +91,10 @@ module.exports.loop = function () {
         // TODO: change number by total body parts
         let longHarvesterShouldCount = Math.max(0, longHarvesterBaseCount - (workerShouldCount - workerCount))
 
+        // TODO: only spawn claimer when longHarvesters are big enough
+        const claimerShouldCount = stateMachine.getRoleCount(spawn.name, 'longHarvester')
+            >= longHarvesterShouldCount ? 1 : 0
+
         let shouldUpgradeCreep =
             harvesterShouldCount +
             workerShouldCount +
@@ -117,10 +122,9 @@ module.exports.loop = function () {
         ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 2)
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep)
+        ensureCreep('claimer', claimerShouldCount, [CLAIM, MOVE], false)
 
-        if (spawn.room.find(FIND_TOMBSTONES, {
-                filter: t => t.creep.owner.username === 'Invader',
-            })[0]) {
+        if (spawn.room.find(FIND_TOMBSTONES, { filter: t => t.creep.owner.username === 'Invader' })[0]) {
 
             if (stateMachine.getRoleCount(spawn.name, 'tombstoneCollector') == 0) {
                 Game.notify(`a invaders tombstone has occured, at ${Game.time}`, 60)
@@ -162,7 +166,7 @@ module.exports.loop = function () {
     }
 
     if (errors.length > 0) {
-        throw new Error(`have error when executing ${(()=>{
+        throw new Error(`have error when executing ${(() => {
             let str = ''
             for (let err of errors) {
                 str += '\n' + err.message + '\n' + err.stack
@@ -224,7 +228,7 @@ function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null, op
 
         if (_.any(list, a => a.memory.toDie || a.memory.doNotKill)) {
             // already about to kill it or dont want to kill it, skip
-            // TODO: what if only one creep dont want to kill while other roles are killable ?
+            // TODO: what if only one creep dont want to kill while other creeps with same role are killable ?
             return
         }
 
