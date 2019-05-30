@@ -73,7 +73,7 @@ module.exports.loop = function () {
         // TODO: if i can set the target of a harvester, then dont need '+1'
         const harvesterShouldCount = spawn.room.find(FIND_SOURCES).length * 2 + 1
         let workerShouldCount = 4
-        let carrierShouldCount = harvesterCount
+        let carrierShouldCount = harvesterCount - 1
 
         let warriorShouldCount = 0
         if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0) {
@@ -86,7 +86,7 @@ module.exports.loop = function () {
         }
 
         // TODO: store flag color other where ?
-        const longHarvesterBaseCount = _.filter(Game.flags, a => a.color === COLOR_PURPLE)[0] ? 4 : 0
+        const longHarvesterBaseCount = _.filter(Game.flags, a => a.color === COLOR_PURPLE)[0] ? 5 : 0
         // TODO: change number by total body parts
         let longHarvesterShouldCount = Math.max(0, longHarvesterBaseCount - (workerShouldCount - workerCount))
 
@@ -122,7 +122,9 @@ module.exports.loop = function () {
                 filter: t => t.creep.owner.username === 'Invader',
             })[0]) {
 
-            Game.notify('a invaders tombstone has occured', 60)
+            if (stateMachine.getRoleCount(spawn.name, 'tombstoneCollector') == 0) {
+                Game.notify(`a invaders tombstone has occured, at ${Game.time}`, 60)
+            }
 
             // do not remove old tomb collectors if no tomb exists
             ensureCreep('tombstoneCollector', 1, [CARRY, MOVE], false)
@@ -241,7 +243,7 @@ function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null, op
 
         if (list.length > number) {
             console.log(`too much ${role}, trying to reduce. expect: ${number}, now: ${list.length}`)
-            for (let i = 0; i <= list.length - number; ++i) {
+            for (let i = 0; i < list.length - number; ++i) {
                 // TODO: set dying strategy in state machine's arrange, rather than changing roles
                 dieList[i].memory.oldRole = role
                 dieList[i].memory.role = 'toDie'
@@ -259,7 +261,7 @@ function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null, op
             const newBody = oldBody.concat(...bodyUnit)
             if (repeat && energy >= bodyCost(newBody)) {
                 // kill smallest creep to spawn a bigger one
-                const message = `kill ${dieList[0].name} to make a better one, old body parts: ${oldBody}, new body parts: ${newBody}, role: ${dieList[0].memory.role}`
+                const message = `kill ${dieList[0].name} to make a better one, old body parts: ${oldBody}, new body parts: ${newBody}, role: ${dieList[0].memory.role}, at ${Game.time}`
                 Game.notify(message, 60)
                 console.log(message)
                 dieList[0].memory.oldRole = role

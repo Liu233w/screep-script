@@ -14,7 +14,12 @@ function run() {
             continue
         }
 
-        const closestHostile = item.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
+        let closestHostile = item.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
+            filter: c => _.any(c.body, b => b.type === HEAL),
+        })
+        if (!closestHostile) {
+            closestHostile = item.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
+        }
         if (closestHostile) {
             item.attack(closestHostile)
             return

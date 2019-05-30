@@ -18,6 +18,18 @@ function run(creep) {
             }
 
             creep.say('empty')
+        } else {
+            const item = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES)
+            if (item) {
+                lib.moveToAndThen(creep, item, () => creep.pickup(invaderTomb, item.resourceType))
+                return
+            }
+        }
+
+        if (_.sum(creep.carry) <= 0) {
+            // nothing to pickup and store
+            lib.moveToSpawnAndThen(creep, spawn => spawn.recycleCreep(creep))
+            return
         }
     }
 
@@ -28,8 +40,7 @@ function run(creep) {
         creep.say('⚠📦', true)
         return
     }
-    lib.moveToAndThen(creep, toStore, () => creep.transfer(toStore, _.findKey(toStore.store)))
-
+    lib.moveToAndThen(creep, toStore, () => creep.transfer(toStore, _.findKey(creep.carry)))
 }
 
 module.exports.run = run

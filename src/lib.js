@@ -98,7 +98,7 @@ function adjecentSource(creep) {
 /**
  * 
  * @param {Creep} creep 
- * @param {Funtion} callBack 
+ * @param {function(StructureSpawn)} callBack 
  */
 function moveToSpawnAndThen(creep, callBack) {
     const mySpawn = findASpawnOfMine(creep)
