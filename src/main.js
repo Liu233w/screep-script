@@ -91,10 +91,6 @@ module.exports.loop = function () {
         // TODO: change number by total body parts
         let longHarvesterShouldCount = Math.max(0, longHarvesterBaseCount - (workerShouldCount - workerCount))
 
-        // TODO: only spawn claimer when longHarvesters are big enough
-        const claimerShouldCount = stateMachine.getRoleCount(spawn.name, 'longHarvester')
-            >= longHarvesterShouldCount ? 1 : 0
-
         let shouldUpgradeCreep =
             harvesterShouldCount +
             workerShouldCount +
@@ -122,7 +118,17 @@ module.exports.loop = function () {
         ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 2)
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep)
-        ensureCreep('claimer', claimerShouldCount, [CLAIM, MOVE], false)
+
+        // TODO: only spawn claimer when longHarvesters are big enough
+        const shouldSpawnClaimer =
+            stateMachine.getRoleCount(spawn.name, 'longHarvester') >= longHarvesterShouldCount
+            && !_.find(Game.creeps, c => c.memory.spawn === spawn.name && c.memory.role === 'claimer' && c.ticksToLive >= 100)
+        if (shouldSpawnClaimer) {
+            spawn.createCreep([CLAIM, MOVE], 'claimer' + Game.time, {
+                role: 'claimer',
+                spawn: spawn.name,
+            })
+        }
 
         if (spawn.room.find(FIND_TOMBSTONES, { filter: t => t.creep.owner.username === 'Invader' })[0]) {
 
