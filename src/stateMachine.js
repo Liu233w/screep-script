@@ -441,6 +441,11 @@ function dispatch(creep, arrangeFunc, option = {}, recursiveCount = 1) {
             tryChangeState(creep, option.dyingCallBack(creep))
             return
         }
+        // FIXME: dyingCallback may not work in this situation
+        // because dyingCallBack may not return RENEW at all
+        if (creep.memory.state === STATES.RENEW) {
+            return
+        }
         // FIXME: if creep donot have CARRY, it is null, so the condition is always false
         if (creep.carry.energy === 0) {
             tryChangeState(creep, option.noEnergyCallBack(creep))
