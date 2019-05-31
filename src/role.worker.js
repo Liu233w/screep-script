@@ -60,8 +60,8 @@ function arrange(creep) {
         // IDLE carrier means it cannot find a place to take energy
         filter: c => c.memory.role === 'carrier' && c.memory.state !== STATES.IDLE,
     }), (sum, curr) => sum + curr.carryCapacity, 0)
-    if (transferEnergy > carrierMaxEnergy + creep.carryCapacity + 200) {
-        console.log(`doing carrier's job, need energy ${transferEnergy}, while carriers' capacity ${carrierMaxEnergy}`)
+    if (transferEnergy > carrierMaxEnergy * 2) {
+        console.log(`doing carrier's job, need energy ${transferEnergy}, while carriers' capacity*2 =  ${carrierMaxEnergy*2}`)
         return STATES.TRANSFER
     }
 
