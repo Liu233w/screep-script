@@ -379,18 +379,32 @@ const ACTIONS = {
                     moveTo(creep, flag, '#ffaa00')
                 } else {
 
-                    const source = creep.pos.findClosestByPath(FIND_SOURCES, {
+                    let sources = creep.room.find(FIND_SOURCES, {
                         filter: s => s.energy > 0,
                     })
 
-                    if (!source) {
+                    if (sources.length <= 0) {
                         if (creep.carry.energy > 0) {
+                            // return its energy
                             tryChangeState(creep, STATES.IDLE)
+                            return
                         } else {
+                            // still try to move to source to save time
                             Game.notify(`source drained, at ${Game.time}`, 30)
                             sayWithSufix(creep, '🔄⚠')
+                            sources = creep.room.find(FIND_SOURCES)
                         }
-                        return
+                    }
+
+                    let source = creep.pos.findClosestByPath(sources)
+
+                    if (!source) {
+                        // source occupied, trying to move to the closest one
+                        source = creep.pos.findClosestByRange(sources)
+                    }
+
+                    if (!source) {
+                        throw new Error(`cannot find a source in this room, this can be a bug, by ${creep.name}`)
                     }
 
                     const result = creep.harvest(source)

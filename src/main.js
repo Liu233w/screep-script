@@ -77,8 +77,10 @@ module.exports.loop = function () {
         let carrierShouldCount = harvesterCount - 1
 
         let warriorShouldCount = 0
-        if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0
-            && spawn.room.find(FIND_MY_STRUCTURES, { filter: s => s.structureType === STRUCTURE_TOWER && s.energy > 0 }).length <= 0) {
+        if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0 &&
+            spawn.room.find(FIND_MY_STRUCTURES, {
+                filter: s => s.structureType === STRUCTURE_TOWER && s.energy > 0
+            }).length <= 0) {
             console.log('hostile creep in room, and no working tower')
             warriorShouldCount += 1
         }
@@ -124,10 +126,10 @@ module.exports.loop = function () {
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep)
 
         const shouldSpawnClaimer =
-            stateMachine.getRoleCount(spawn.name, 'longHarvester') >= longHarvesterShouldCount
+            stateMachine.getRoleCount(spawn.name, 'longHarvester') >= longHarvesterShouldCount &&
             // longHarvester must have more than 10 body parts in average
-            && utils.sumBy(_.filter(Game.creeps, c => lib.checkCreepRole(c, spawn, 'longHarvester')), c => c.body.length) >= longHarvesterShouldCount * 10
-            && !_.find(Game.creeps, c => lib.checkCreepRole(c, spawn, 'claimer') && c.ticksToLive >= 100)
+            utils.sumBy(_.filter(Game.creeps, c => lib.checkCreepRole(c, spawn, 'longHarvester')), c => c.body.length) >= longHarvesterShouldCount * 10 &&
+            !_.find(Game.creeps, c => lib.checkCreepRole(c, spawn, 'claimer') && c.ticksToLive >= 100)
         if (shouldSpawnClaimer) {
             spawn.createCreep([CLAIM, MOVE], 'claimer' + Game.time, {
                 role: 'claimer',
@@ -135,7 +137,10 @@ module.exports.loop = function () {
             })
         }
 
-        if (spawn.room.find(FIND_TOMBSTONES, { filter: t => t.creep.owner.username === 'Invader' })[0]) {
+        if (spawn.room.find(FIND_TOMBSTONES, {
+            // if tombstone is empty, stop spawning collector
+                filter: t => t.creep.owner.username === 'Invader' && _.sum(t.store) > 0,
+            })[0]) {
 
             if (stateMachine.getRoleCount(spawn.name, 'tombstoneCollector') == 0) {
                 Game.notify(`a invaders tombstone has occured, at ${Game.time}`, 60)

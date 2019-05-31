@@ -21,7 +21,7 @@ function run(creep) {
         } else {
             const item = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES)
             if (item) {
-                lib.moveToAndThen(creep, item, () => creep.pickup(invaderTomb, item.resourceType))
+                lib.moveToAndThen(creep, item, () => creep.pickup(item))
                 return
             }
         }
