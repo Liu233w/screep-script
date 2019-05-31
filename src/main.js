@@ -77,13 +77,17 @@ module.exports.loop = function () {
         let carrierShouldCount = harvesterCount - 1
 
         let warriorShouldCount = 0
-        if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0) {
-            console.log('hostile creep in room')
+        if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0
+            && spawn.room.find(FIND_MY_STRUCTURES, { filter: s => s.structureType === STRUCTURE_TOWER && s.energy > 0 }).length <= 0) {
+            console.log('hostile creep in room, and no working tower')
             warriorShouldCount += 1
         }
         // FIXME: if we cannot see the room ?
         if (Game.rooms['E23N23'] && Game.rooms['E23N23'].find(FIND_HOSTILE_CREEPS).length > 0) {
-            warriorShouldCount += 1
+            const message = `hostile creep in other room, at ${Game.time}`
+            console.log(message)
+            Game.notify(message, 30)
+            warriorShouldCount += 2
         }
 
         // TODO: store flag color other where ?
