@@ -156,7 +156,7 @@ function findAdjcentPassableAreaNumber(pos) {
     for (let adj of adjcentPositionGenerator(pos)) {
         const items = adj.look()
         if (items.some(item => item.terrain === 'plain' ||
-                (item.type === LOOK_STRUCTURES && item.structure.structureType === STRUCTURE_ROAD))) {
+            (item.type === LOOK_STRUCTURES && item.structure.structureType === STRUCTURE_ROAD))) {
             count += 1
         }
     }
@@ -200,6 +200,19 @@ function moveToAndThen(creep, target, callBack) {
     }
 }
 
+/**
+ * 
+ * @param {Creep} creep 
+ * @param {StructureSpawn|string} spawn 
+ * @param {string} role 
+ */
+function checkCreepRole(creep, spawn, role) {
+    if (spawn instanceof StructureSpawn) {
+        spawn = spawn.name
+    }
+    return creep.memory.spawn === spawn && creep.memory.role === role
+}
+
 module.exports = {
     moveToSpawnAndThen,
     moveTo,
@@ -214,4 +227,5 @@ module.exports = {
     adjcentPositionGenerator,
     sayWithSufix,
     moveToAndThen,
+    checkCreepRole,
 }

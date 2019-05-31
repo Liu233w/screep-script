@@ -123,10 +123,11 @@ module.exports.loop = function () {
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep)
 
-        // TODO: only spawn claimer when longHarvesters are big enough
         const shouldSpawnClaimer =
             stateMachine.getRoleCount(spawn.name, 'longHarvester') >= longHarvesterShouldCount
-            && !_.find(Game.creeps, c => c.memory.spawn === spawn.name && c.memory.role === 'claimer' && c.ticksToLive >= 100)
+            // longHarvester must have more than 10 body parts in average
+            && utils.sumBy(_.filter(Game.creeps, c => lib.checkCreepRole(c, spawn, 'longHarvester')), c => c.body.length) >= longHarvesterShouldCount * 10
+            && !_.find(Game.creeps, c => lib.checkCreepRole(c, spawn, 'claimer') && c.ticksToLive >= 100)
         if (shouldSpawnClaimer) {
             spawn.createCreep([CLAIM, MOVE], 'claimer' + Game.time, {
                 role: 'claimer',
