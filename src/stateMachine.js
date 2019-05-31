@@ -74,6 +74,9 @@ a job action is really simple, only work on a target rather than others
 provide many util function like 'find closest source or taking target' to use them in many roles
 
 do not pre-define dying and no energy strategy, let each role use tickFunction do that
+
+every job can have a progress in percentage, so other creep can check it. eg. a carrier can check
+a nearby harvester if it's finishing, so it can decide to wait for it or fetch from a nearby container
 */
 
 const ACTIONS = {
