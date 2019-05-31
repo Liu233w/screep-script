@@ -387,8 +387,10 @@ const ACTIONS = {
                         if (creep.carry.energy > 0) {
                             tryChangeState(creep, STATES.IDLE)
                         } else {
+                            Game.notify(`source drained, at ${Game.time}`, 30)
                             sayWithSufix(creep, '🔄⚠')
                         }
+                        return
                     }
 
                     const result = creep.harvest(source)
