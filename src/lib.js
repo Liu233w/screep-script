@@ -193,7 +193,19 @@ function* adjcentPositionGenerator(pos) {
  * @param {string} message 
  */
 function sayWithSufix(creep, message) {
-    creep.say(message + creep.memory.role[0] + creep.name[creep.name.length - 1] + (creep.memory.toDie ? '💀' : ''), true)
+    const said = creep.memory._said || {
+        time: -1,
+    }
+    creep.memory._said = said
+
+    if (said.time !== Game.time) {
+        said.time = Game.time
+        said.msg = ''
+    }
+    said.msg += message
+    said.msg += '|'
+    
+    creep.say(said.msg + creep.memory.role[0] + creep.name[creep.name.length - 1] + (creep.memory.toDie ? '💀' : ''), true)
 }
 
 /**

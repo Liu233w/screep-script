@@ -71,9 +71,12 @@ module.exports.loop = function () {
         const longHarvesterCount = stateMachine.getRoleCount(spawn.name, 'longHarvester')
         const carrierCount = stateMachine.getRoleCount(spawn.name, 'carrier')
 
-        // TODO: assign a target to a harvester
-        const harvesterShouldCount = spawn.room.find(FIND_SOURCES).length * 2
-        let workerShouldCount = 4
+        const workerBaseCount = 8
+
+        // TODO: cache source info
+        const sources = spawn.room.find(FIND_SOURCES)
+        const harvesterShouldCount = sources.length * 2
+        let workerShouldCount = workerBaseCount - harvesterCount
         let carrierShouldCount = Math.max(0, harvesterCount - 1)
 
         let warriorShouldCount = 0
@@ -125,10 +128,11 @@ module.exports.loop = function () {
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep)
 
+        const shouldSpawnClaimerOnLHBodyPartNumber = 15
         const shouldSpawnClaimer =
             stateMachine.getRoleCount(spawn.name, 'longHarvester') >= longHarvesterShouldCount &&
             // longHarvester must have more than 10 body parts in average
-            utils.sumBy(_.filter(Game.creeps, c => lib.checkCreepRole(c, spawn, 'longHarvester')), c => c.body.length) >= longHarvesterShouldCount * 10 &&
+            utils.sumBy(_.filter(Game.creeps, c => lib.checkCreepRole(c, spawn, 'longHarvester')), c => c.body.length) >= longHarvesterShouldCount * shouldSpawnClaimerOnLHBodyPartNumber &&
             !_.find(Game.creeps, c => lib.checkCreepRole(c, spawn, 'claimer') && c.ticksToLive >= 100)
         if (shouldSpawnClaimer) {
             trySpawn('claimer', [CLAIM, MOVE])
@@ -147,6 +151,22 @@ module.exports.loop = function () {
             ensureCreep('tombstoneCollector', 1, [CARRY, MOVE], false)
             console.log('spawning tomb collector')
         }
+
+        // allocate source
+        if (!Memory.assignedHarvester || !Memory.assignedHarvester[spawn.name]) {
+            const harvesters = _.filter(Game.creeps, c => lib.checkCreepRole(c, spawn, 'harvester'))
+            console.log(`harvesters.length ${harvesters.length}, harvesterCount ${harvesterCount}, harvesterShouldCount ${harvesterShouldCount}`)
+            if (harvesterCount === harvesterShouldCount && harvesterCount === harvesters.length) {
+                // TODO: move 2 into a const
+                for (let i = 0; i < harvesterCount; i += 2) {
+                    harvesters[i].memory.sourceTarget = sources[Math.ceil(i / 2)].id
+                }
+            }
+            const a = Memory.assignedHarvester || {}
+            a[spawn.name] = true
+            Memory.assignedHarvester = a
+        }
+
 
     } catch (err) {
         errors.push(err)

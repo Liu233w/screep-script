@@ -126,10 +126,17 @@ const ACTIONS = {
                 // if (source && source.energy < 0) {
                 //     source = null
                 // }
+            } else if (creep.memory.target) {
+                source = Game.getObjectById(creep.memory.target)
             } else {
-                source = creep.pos.findClosestByPath(FIND_SOURCES, {
+                const sources = creep.room.find(FIND_SOURCES, {
                     filter: s => s.energy > 0,
                 })
+                const targetCount = _.countBy(_.filter(creep.room.find(FIND_MY_CREEPS), c => c.memory.state === STATES.HARVEST), c => c.target)
+                // least creep used source
+                const source = utils.minBy(sources, s => targetCount[s.id] || 0)
+                // console.log(`assigned a new target to harvest, by ${creep.name}`)
+                creep.memory.target = source ? source.id : null
             }
 
             if (!source) {
@@ -151,6 +158,7 @@ const ACTIONS = {
                 } else {
                     moveTo(creep, source)
                     sayWithSufix(creep, '🔄⚠')
+                    creep.memory.target = null
                 }
                 return
             }
@@ -186,7 +194,7 @@ const ACTIONS = {
                     filter: s => [STRUCTURE_CONTAINER, STRUCTURE_STORAGE].includes(s.structureType) && s.store.energy > 0,
                 }),
                 ...creep.room.find(FIND_MY_CREEPS, {
-                    filter: s => s.memory.state === STATES.STORE && s.carry.energy > 0,
+                    filter: s => s.memory.state === STATES.STORE && s.carry.energy > 0 && s.memory.role !== creep.memory.role,
                 }),
             ]
 
@@ -199,6 +207,7 @@ const ACTIONS = {
             if (!best) {
                 // TODO: try to harvest ? not work for carrier though
                 sayWithSufix(creep, '🔌⚠')
+                // console.log(`nothing to take, by ${creep.name}`)
                 tryChangeState(creep, STATES.IDLE)
                 // TODO: try move to spawn to pick up dead creep body? can check if a 'toDie' creep is going to spawn point 
                 return
@@ -362,7 +371,9 @@ const ACTIONS = {
         // harvesting worker and containers has higher priority
         let target = creep.pos.findClosestByRange(targets)
 
+        // not suitable, should go home
         // to prevent from giving energy to a nearly full creep
+        /*
         const CREEP_FULL_THRESHOLD = 10
         if (!target) {
             console.log(`try find nearest creep to give energy, by ${creep.name}`)
@@ -371,6 +382,7 @@ const ACTIONS = {
                     c.carry.energy < c.carryCapacity - CREEP_FULL_THRESHOLD,
             })
         }
+        */
 
         if (target) {
             sayWithSufix(creep, '🔋')
@@ -379,7 +391,12 @@ const ACTIONS = {
             }
         } else {
             console.log(`cannot find a target to store energy, by ${creep.name}`)
-            tryChangeState(creep, STATES.IDLE)
+            // tryChangeState(creep, STATES.IDLE)
+            if (creep.room.name !== Game.spawns[creep.memory.spawn].room.name) {
+                tryChangeState(creep, STATES.GO_HOME)
+            } else {
+                tryChangeState(creep, STATES.IDLE)
+            }
         }
     },
     /**
@@ -568,6 +585,7 @@ function tryChangeState(creep, newState, target = null) {
 
     const oldState = creep.memory.state
     if (oldState === newState) {
+        // console.log(`same state, dont have to change ${oldState}, by ${creep.name}`)
         return
     }
 

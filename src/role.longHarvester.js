@@ -23,7 +23,12 @@ const spawnStrategy = {
  * 
  * @param {Creep} creep 
  */
-function arrange(creep) {
+function arrange(creep, remainCount) {
+
+    if (remainCount <= 0) {
+        return STATES.UPGRADE
+    }
+
     if (creep.room.find(FIND_STRUCTURES, FIND_FILTERS.storeToStructure(creep)).length > 0) {
         return STATES.STORE
     } else {
