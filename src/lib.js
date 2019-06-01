@@ -189,7 +189,7 @@ function sayWithSufix(creep, message) {
 }
 
 /**
- * 
+ * do action first, if return NOT_IN_RANGE try move
  * @param {Creep} creep 
  * @param {RoomObject} target 
  * @param {function(Creep, RoomObject): CreepActionReturnCode} callBack 
@@ -197,7 +197,7 @@ function sayWithSufix(creep, message) {
 function moveToAndThen(creep, target, callBack) {
     const result = callBack(creep, target)
     if (result === ERR_NOT_IN_RANGE) {
-        creep.moveTo(target)
+        moveTo(creep, target)
     }
     return result
 }

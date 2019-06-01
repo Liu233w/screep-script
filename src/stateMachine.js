@@ -201,7 +201,6 @@ const ACTIONS = {
                 sayWithSufix(creep, '🔌⚠')
                 tryChangeState(creep, STATES.IDLE)
                 // TODO: try move to spawn to pick up dead creep body? can check if a 'toDie' creep is going to spawn point 
-                // creep.moveTo(creep.room.find(FIND_MY_SPAWNS)[0])
                 return
             }
 

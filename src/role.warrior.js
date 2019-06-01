@@ -38,7 +38,7 @@ function run(creep) {
     const enemy = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS)
     if (enemy) {
         if (creep.attack(enemy) === ERR_NOT_IN_RANGE) {
-            creep.moveTo(enemy.pos)
+            moveTo(creep, enemy.pos)
         }
         return
     }
