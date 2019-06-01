@@ -200,6 +200,10 @@ module.exports.loop = function () {
  */
 function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null, options = {}) {
 
+    if (number < 0) {
+        number = 0
+    }
+
     const spawn = Game.spawns['Spawn1']
     const energy = spawn.room.energyAvailable
     /** @type {Creep[]} */
