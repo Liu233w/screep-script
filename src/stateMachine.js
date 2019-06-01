@@ -22,6 +22,8 @@ const STATES = {
     LONG_HARVEST: 'long_harvest',
 }
 
+const utils = require('./utils')
+
 /*
 TODO: add target to memory, will reset when change state. use it as target first
 TODO: add state 'GO_ROOM' can build longHarvester and longBuilder based on it
@@ -218,6 +220,10 @@ const ACTIONS = {
      */
     [STATES.TRANSFER](creep) {
 
+        // if a working target have a nearly full energy, don not transfer to it, because it's too slow
+        // to prevent from this situation, find a lowest energy structure beside it to transfer.
+        const TRANSFER_RADIO = 3
+
         let target
         // when attacked, transfer to tower first
         if (creep.room.find(FIND_HOSTILE_CREEPS).length > 0) {
@@ -232,7 +238,10 @@ const ACTIONS = {
 
         if (target) {
             sayWithSufix(creep, '⚡')
-            // TODO: if a working target have a nearly full energy, don not transfer to it, because it's too slow
+
+            const targets = target.pos.findInRange(FIND_MY_STRUCTURES, TRANSFER_RADIO, FIND_FILTERS.transfer(creep))
+            target = utils.minBy(targets, t => t.energy)
+
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
                 moveTo(creep, target)
             }

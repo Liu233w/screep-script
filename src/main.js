@@ -79,7 +79,7 @@ module.exports.loop = function () {
         let warriorShouldCount = 0
         if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0 &&
             spawn.room.find(FIND_MY_STRUCTURES, {
-                filter: s => s.structureType === STRUCTURE_TOWER && s.energy > 0
+                filter: s => s.structureType === STRUCTURE_TOWER && s.energy > 0,
             }).length <= 0) {
             console.log('hostile creep in room, and no working tower')
             warriorShouldCount += 1
@@ -142,7 +142,7 @@ module.exports.loop = function () {
                 filter: t => t.creep.owner.username === 'Invader' && _.sum(t.store) > 0,
             })[0]) {
 
-            if (stateMachine.getRoleCount(spawn.name, 'tombstoneCollector') == 0) {
+            if (stateMachine.getRoleCount(spawn.name, 'tombstoneCollector') === 0) {
                 Game.notify(`a invaders tombstone has occured, at ${Game.time}`, 60)
             }
 
