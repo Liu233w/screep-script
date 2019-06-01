@@ -25,18 +25,6 @@ function run(creep) {
         }
     }
 
-    if (creep.hits < 100 || creep.memory.healing) {
-        creep.say('😱')
-        creep.memory.healing = true
-
-        if (creep.hits >= creep.hitsMax) {
-            creep.memory.healing = false
-        } else {
-            moveToSpawnAndThen(creep)
-            return
-        }
-    }
-
     const enemy = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS)
     if (enemy) {
         if (creep.attack(enemy) === ERR_NOT_IN_RANGE) {

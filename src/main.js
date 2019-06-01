@@ -77,6 +77,7 @@ module.exports.loop = function () {
         const sources = spawn.room.find(FIND_SOURCES)
         const harvesterShouldCount = sources.length * 2
         let workerShouldCount = workerBaseCount - harvesterCount
+        // TODO: dont need too many carrier if not enough structure
         let carrierShouldCount = Math.max(0, harvesterCount - 1)
 
         let warriorShouldCount = 0
@@ -88,7 +89,8 @@ module.exports.loop = function () {
             warriorShouldCount += 1
         }
         // FIXME: if we cannot see the room ?
-        if (Game.rooms['E23N23'] && Game.rooms['E23N23'].find(FIND_HOSTILE_CREEPS).length > 0) {
+        const redFlag = _.filter(Game.flags, a => a.color === COLOR_RED)[0]
+        if (redFlag && redFlag.room && redFlag.room.find(FIND_HOSTILE_CREEPS).length > 0) {
             const message = `hostile creep in other room, at ${Game.time}`
             console.log(message)
             // Game.notify(message, 30)
@@ -128,7 +130,7 @@ module.exports.loop = function () {
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep)
 
-        const shouldSpawnClaimerOnLHBodyPartNumber = 15
+        const shouldSpawnClaimerOnLHBodyPartNumber = 13
         const shouldSpawnClaimer =
             stateMachine.getRoleCount(spawn.name, 'longHarvester') >= longHarvesterShouldCount &&
             // longHarvester must have more than 10 body parts in average
@@ -155,16 +157,16 @@ module.exports.loop = function () {
         // allocate source
         if (!Memory.assignedHarvester || !Memory.assignedHarvester[spawn.name]) {
             const harvesters = _.filter(Game.creeps, c => lib.checkCreepRole(c, spawn, 'harvester'))
-            console.log(`harvesters.length ${harvesters.length}, harvesterCount ${harvesterCount}, harvesterShouldCount ${harvesterShouldCount}`)
+            // console.log(`harvesters.length ${harvesters.length}, harvesterCount ${harvesterCount}, harvesterShouldCount ${harvesterShouldCount}`)
             if (harvesterCount === harvesterShouldCount && harvesterCount === harvesters.length) {
                 // TODO: move 2 into a const
                 for (let i = 0; i < harvesterCount; i += 2) {
                     harvesters[i].memory.sourceTarget = sources[Math.ceil(i / 2)].id
                 }
+                const a = Memory.assignedHarvester || {}
+                a[spawn.name] = true
+                Memory.assignedHarvester = a
             }
-            const a = Memory.assignedHarvester || {}
-            a[spawn.name] = true
-            Memory.assignedHarvester = a
         }
 
 
@@ -225,6 +227,12 @@ function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null, op
     }
 
     const spawn = Game.spawns['Spawn1']
+
+    // do not spawn or replace when spawning
+    if (spawn.spawning) {
+        return
+    }
+
     const energy = spawn.room.energyAvailable
     /** @type {Creep[]} */
     const list = _.filter(Game.creeps, creep => creep.memory.role === role || creep.memory.oldRole === role)
@@ -247,12 +255,12 @@ function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null, op
         if (repeat) {
 
             let body = bodyUnit
-            let repeat = 1
+            let repeatCount = 1
             let newBody = bodyUnit
             do {
                 body = newBody
-                newBody = utils.repeatArray(bodyUnit, ++repeat)
-            } while (bodyCost(newBody) <= energy && (!maxRepeat || repeat <= maxRepeat))
+                newBody = utils.repeatArray(bodyUnit, ++repeatCount)
+            } while (bodyCost(newBody) <= energy && (!maxRepeat || repeatCount <= maxRepeat))
             // biggest repeat of body
 
             trySpawn(role, body, spawnMemory)
@@ -290,25 +298,37 @@ function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null, op
                 dieList[i].memory.role = 'toDie'
             }
 
-            // length == number
-        } else {
+        } else { // length == number
 
-            const oldBody = _.map(dieList[0].body, 'type')
-            if (maxRepeat && oldBody.length >= bodyUnit.length * maxRepeat) {
-                // reached max repeat limit, do not spawn bigger one
+            if (!repeat) {
                 return
             }
 
-            const newBody = oldBody.concat(...bodyUnit)
-            if (repeat && energy >= bodyCost(newBody)) {
-                // kill smallest creep to spawn a bigger one
-                const message = `kill ${dieList[0].name} to make a better one, old body parts: ${oldBody}, new body parts: ${newBody}, role: ${dieList[0].memory.role}, at ${Game.time}`
-                Game.notify(message, 60)
-                console.log(message)
-                dieList[0].memory.oldRole = role
-                dieList[0].memory.role = 'toDie'
-                trySpawn(role, newBody)
+            const oldBodyRepeat = Math.floor(dieList[0].body.length / bodyUnit.length)
+
+            // TODO: reuse the code beyond
+            let body = null
+            let newBody = null
+            let repeatCount = oldBodyRepeat - 1
+            do {
+                body = newBody
+                newBody = utils.repeatArray(bodyUnit, ++repeatCount)
+            } while (bodyCost(newBody) <= energy && (!maxRepeat || repeatCount <= maxRepeat))
+
+            repeatCount -= 1 // repeat count is bigger by 1
+            // console.log(`repeat count ${repeatCount}, oldBodyRepeat ${oldBodyRepeat}`)
+            if (repeatCount <= oldBodyRepeat) {
+                // cannot spawn bigger one
+                return
             }
+
+            // kill smallest creep to spawn a bigger one
+            const message = `kill ${dieList[0].name} to make a better one, old body parts: ${_.map(dieList[0].body, 'type')}, new body parts: ${body}, role: ${role}, at ${Game.time}`
+            Game.notify(message, 60)
+            console.log(message)
+            dieList[0].memory.oldRole = role
+            dieList[0].memory.role = 'toDie'
+            trySpawn(role, body)
         }
     }
 }
