@@ -71,8 +71,8 @@ module.exports.loop = function () {
         const longHarvesterCount = stateMachine.getRoleCount(spawn.name, 'longHarvester')
         const carrierCount = stateMachine.getRoleCount(spawn.name, 'carrier')
 
-        // TODO: if i can set the target of a harvester, then dont need '+1'
-        const harvesterShouldCount = spawn.room.find(FIND_SOURCES).length * 2 + 1
+        // TODO: assign a target to a harvester
+        const harvesterShouldCount = spawn.room.find(FIND_SOURCES).length * 2
         let workerShouldCount = 4
         let carrierShouldCount = harvesterCount - 1
 
@@ -88,7 +88,7 @@ module.exports.loop = function () {
         if (Game.rooms['E23N23'] && Game.rooms['E23N23'].find(FIND_HOSTILE_CREEPS).length > 0) {
             const message = `hostile creep in other room, at ${Game.time}`
             console.log(message)
-            Game.notify(message, 30)
+            // Game.notify(message, 30)
             warriorShouldCount += 2
         }
 
@@ -131,20 +131,17 @@ module.exports.loop = function () {
             utils.sumBy(_.filter(Game.creeps, c => lib.checkCreepRole(c, spawn, 'longHarvester')), c => c.body.length) >= longHarvesterShouldCount * 10 &&
             !_.find(Game.creeps, c => lib.checkCreepRole(c, spawn, 'claimer') && c.ticksToLive >= 100)
         if (shouldSpawnClaimer) {
-            spawn.createCreep([CLAIM, MOVE], 'claimer' + Game.time, {
-                role: 'claimer',
-                spawn: spawn.name,
-            })
+            trySpawn('claimer', [CLAIM, MOVE])
         }
 
         if (spawn.room.find(FIND_TOMBSTONES, {
-            // if tombstone is empty, stop spawning collector
+                // if tombstone is empty, stop spawning collector
                 filter: t => t.creep.owner.username === 'Invader' && _.sum(t.store) > 0,
             })[0]) {
 
-            if (stateMachine.getRoleCount(spawn.name, 'tombstoneCollector') === 0) {
-                Game.notify(`a invaders tombstone has occured, at ${Game.time}`, 60)
-            }
+            // if (stateMachine.getRoleCount(spawn.name, 'tombstoneCollector') === 0) {
+            //     Game.notify(`a invaders tombstone has occured, at ${Game.time}`, 60)
+            // }
 
             // do not remove old tomb collectors if no tomb exists
             ensureCreep('tombstoneCollector', 1, [CARRY, MOVE], false)

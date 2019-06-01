@@ -21,6 +21,22 @@ const spawnStrategy = {
  * @param {Creep} creep 
  */
 function arrange(creep, remainDispatchCount) {
+
+    // if a container under construction, build it
+    const BUILD_CONTAINER_RADIUS = 3
+    /**
+     * @type {Source|null}
+     */
+    const sourceTarget = Game.getObjectById(creep.memory.sourceTarget)
+    if (sourceTarget) {
+        const containerConstruction = sourceTarget.pos.findInRange(FIND_CONSTRUCTION_SITES, BUILD_CONTAINER_RADIUS, {
+            filter: s => s.structureType === STRUCTURE_CONTAINER,
+        })[0]
+        if (containerConstruction) {
+            return STATES.BUILD
+        }
+    }
+
     if (remainDispatchCount <= 0) {
         // no target to store
         return STATES.TRANSFER

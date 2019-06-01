@@ -12,6 +12,7 @@ function run(creep) {
 
     if (creep.memory.collect) {
 
+        lib.sayWithSufix(creep, '🤚')
         if (_.sum(creep.carry) < creep.carryCapacity) {
             const invaderTomb = creep.room.find(FIND_TOMBSTONES, {
                 filter: t => t.creep.owner.username === 'Invader',
@@ -19,7 +20,6 @@ function run(creep) {
             if (invaderTomb) {
                 const resource = _.findKey(invaderTomb.store)
                 if (resource) {
-                    lib.sayWithSufix(creep, '🤚')
                     lib.moveToAndThen(creep, invaderTomb, () => creep.withdraw(invaderTomb, resource))
                     return
                 }
@@ -48,6 +48,8 @@ function run(creep) {
         lib.moveToSpawnAndThen(creep, spawn => spawn.recycleCreep(creep))
         return
     }
+
+    lib.sayWithSufix(creep, '📦')
 
     // else
     const toStore = creep.pos.findClosestByRange(FIND_STRUCTURES, {

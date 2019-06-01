@@ -6,6 +6,7 @@ const {
     moveTo,
     moveToHomeAndThen,
     sayWithSufix,
+    moveToAndThen,
 } = require('./lib')
 
 const STATES = {
@@ -20,6 +21,7 @@ const STATES = {
     STORE: 'store',
     GO_HOME: 'go_home',
     LONG_HARVEST: 'long_harvest',
+    DESTRUCT: 'destruct',
 }
 
 const utils = require('./utils')
@@ -107,15 +109,23 @@ const ACTIONS = {
 
             sayWithSufix(creep, '🔄')
 
+            // if there are energy resources under foot, pick them up
+            const resource = creep.pos.lookFor(RESOURCE_ENERGY)
+            if (resource[0]) {
+                creep.pickup(resource[0])
+                return
+            }
+
             /**
              * @type {Source}
              */
             let source
             if (creep.memory.sourceTarget) {
                 source = Game.getObjectById(creep.memory.sourceTarget)
-                if (source && source.energy < 0) {
-                    source = null
-                }
+                // console.log(`find a source, ${source.id}`)
+                // if (source && source.energy < 0) {
+                //     source = null
+                // }
             } else {
                 source = creep.pos.findClosestByPath(FIND_SOURCES, {
                     filter: s => s.energy > 0,
@@ -135,6 +145,11 @@ const ACTIONS = {
 
             const result = creep.harvest(source)
             if (result == ERR_NOT_IN_RANGE) {
+                moveTo(creep, source)
+                return
+            }
+            if (result === ERR_NOT_ENOUGH_ENERGY) {
+                sayWithSufix(creep, '🔄⚠')
                 moveTo(creep, source)
             }
         } else {
@@ -222,7 +237,7 @@ const ACTIONS = {
 
         // if a working target have a nearly full energy, don not transfer to it, because it's too slow
         // to prevent from this situation, find a lowest energy structure beside it to transfer.
-        const TRANSFER_RADIO = 3
+        const TRANSFER_RADIUS = 3
 
         let target
         // when attacked, transfer to tower first
@@ -239,7 +254,7 @@ const ACTIONS = {
         if (target) {
             sayWithSufix(creep, '⚡')
 
-            const targets = target.pos.findInRange(FIND_MY_STRUCTURES, TRANSFER_RADIO, FIND_FILTERS.transfer(creep))
+            const targets = target.pos.findInRange(FIND_MY_STRUCTURES, TRANSFER_RADIUS, FIND_FILTERS.transfer(creep))
             target = utils.minBy(targets, t => t.energy)
 
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
@@ -424,6 +439,37 @@ const ACTIONS = {
             } else {
                 console.log(`cannot find a flag to harvest, flag color needed: ${TARGET_FLAG_COLOR}, by ${creep.name}`)
                 tryChangeState(creep, STATES.IDLE)
+            }
+        } else {
+            tryChangeState(creep, STATES.IDLE)
+        }
+    },
+    /**
+     * 
+     * @param {Creep} creep 
+     */
+    [STATES.DESTRUCT](creep) {
+
+        if (creep.carry.energy >= creep.carryCapacity) {
+            tryChangeState(creep, STATES.IDLE)
+            return
+        }
+
+        const TARGET_FLAG_COLOR = COLOR_GREY
+        const flag = creep.pos.findClosestByRange(FIND_FLAGS, {
+            filter: f => f.color === TARGET_FLAG_COLOR,
+        })
+        if (flag) {
+            const structure = flag.pos.lookFor(LOOK_STRUCTURES)[0]
+            if (structure) {
+                sayWithSufix(creep, '💣')
+                moveToAndThen(creep, structure, () => creep.dismantle(structure))
+                // console.log(`res: ${res}, by ${creep.name}`)
+            } else {
+                // console.log(`destruct done, by ${creep.name}`)
+                tryChangeState(creep, STATES.IDLE)
+                flag.remove()
+                return
             }
         } else {
             tryChangeState(creep, STATES.IDLE)

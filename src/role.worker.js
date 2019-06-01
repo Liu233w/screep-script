@@ -1,5 +1,6 @@
 const {
     FIND_FILTERS,
+    checkCreepRole,
 } = require('./lib')
 
 const utils = require('./utils')
@@ -24,10 +25,18 @@ function noEnergyCallBack(creep) {
         return STATES.TAKE
     }
 
+    if (creep.room.find(FIND_FLAGS, {
+            filter: f => f.color === COLOR_GREY,
+        }).length > 0) {
+        return STATES.DESTRUCT
+    }
+
     // TODO: too tight here ?
     // try save role should count in memory ?
-    const harvesterCount = stateMachine.getRoleCount(creep.memory.spawn, 'harvester')
-    const harvesterShouldCount = creep.room.find(FIND_SOURCES).length * 2 + 1
+    // if a harvester are in renewing or no enough harvester, do its job
+    // TODO: try to use the target that have leaest harvester ?
+    const harvesterCount = _.countBy(Game.creeps, c => checkCreepRole(c, creep.memory.spawn, 'harvester') && c.memory.state === STATES.HARVEST)
+    const harvesterShouldCount = creep.room.find(FIND_SOURCES).length * 2
     if (harvesterCount + stateMachine.getRoleStateCount(creep.memory.spawn, 'worker', STATES.HARVEST) < harvesterShouldCount) {
         return STATES.HARVEST
     } else {

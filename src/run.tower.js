@@ -22,7 +22,7 @@ function run() {
         }
         if (closestHostile) {
             item.attack(closestHostile)
-            return
+            continue
         }
 
         const closestDamagedCreep = item.pos.findClosestByRange(FIND_MY_CREEPS, {
@@ -30,7 +30,7 @@ function run() {
         })
         if (closestDamagedCreep) {
             item.heal(closestDamagedCreep)
-            return
+            continue
         }
 
         const damagedStructures = item.room.find(FIND_STRUCTURES, FIND_FILTERS.repair(item))
@@ -38,7 +38,7 @@ function run() {
         //const closestDamagedStructure = item.pos.findClosestByRange(FIND_STRUCTURES, FIND_FILTERS.repair(item))
         if (repairOrder[0]) {
             item.repair(repairOrder[0])
-            return
+            continue
         }
     }
 }

@@ -15,7 +15,7 @@ const FIND_FILTERS = {
     repair: (locateable, anding) => ({
         filter: structure => {
             if (_.includes(Memory.notRepairIds, structure.id) ||
-                _.find(locateable.room.lookForAt(LOOK_FLAGS, structure.pos), flag => flag.color === COLOR_RED)) {
+                _.find(locateable.room.lookForAt(LOOK_FLAGS, structure.pos), flag => flag.color === COLOR_RED || flag.color === COLOR_GREY)) {
                 // don't need to repair
                 return false
             }
@@ -156,7 +156,7 @@ function findAdjcentPassableAreaNumber(pos) {
     for (let adj of adjcentPositionGenerator(pos)) {
         const items = adj.look()
         if (items.some(item => item.terrain === 'plain' ||
-            (item.type === LOOK_STRUCTURES && item.structure.structureType === STRUCTURE_ROAD))) {
+                (item.type === LOOK_STRUCTURES && item.structure.structureType === STRUCTURE_ROAD))) {
             count += 1
         }
     }
@@ -195,9 +195,11 @@ function sayWithSufix(creep, message) {
  * @param {function(Creep, RoomObject): CreepActionReturnCode} callBack 
  */
 function moveToAndThen(creep, target, callBack) {
-    if (callBack(creep, target) === ERR_NOT_IN_RANGE) {
+    const result = callBack(creep, target)
+    if (result === ERR_NOT_IN_RANGE) {
         creep.moveTo(target)
     }
+    return result
 }
 
 /**
