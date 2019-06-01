@@ -74,7 +74,7 @@ module.exports.loop = function () {
         // TODO: assign a target to a harvester
         const harvesterShouldCount = spawn.room.find(FIND_SOURCES).length * 2
         let workerShouldCount = 4
-        let carrierShouldCount = harvesterCount - 1
+        let carrierShouldCount = Math.max(0, harvesterCount - 1)
 
         let warriorShouldCount = 0
         if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0 &&

@@ -35,7 +35,7 @@ function noEnergyCallBack(creep) {
     // try save role should count in memory ?
     // if a harvester are in renewing or no enough harvester, do its job
     // TODO: try to use the target that have leaest harvester ?
-    const harvesterCount = _.countBy(Game.creeps, c => checkCreepRole(c, creep.memory.spawn, 'harvester') && c.memory.state === STATES.HARVEST)
+    const harvesterCount = utils.countIf(Game.creeps, c => checkCreepRole(c, creep.memory.spawn, 'harvester') && c.memory.state === STATES.HARVEST)
     const harvesterShouldCount = creep.room.find(FIND_SOURCES).length * 2
     if (harvesterCount + stateMachine.getRoleStateCount(creep.memory.spawn, 'worker', STATES.HARVEST) < harvesterShouldCount) {
         return STATES.HARVEST

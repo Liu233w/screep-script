@@ -3,6 +3,8 @@ const {
     renewOrRecycle,
 } = require('./lib')
 
+const lib = require('./lib')
+
 /**
  * 
  * @param {Creep} creep 
@@ -75,11 +77,7 @@ function run(creep) {
 }
 
 function moveTo(creep, target, stroke = '#ff0000') {
-    creep.moveTo(target, {
-        visualizePathStyle: {
-            stroke,
-        },
-    })
+    lib.moveTo(creep, target, stroke)
 }
 
 module.exports.run = run

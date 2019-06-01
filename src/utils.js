@@ -29,4 +29,19 @@ module.exports = {
         })
         return minItem
     },
+    /**
+     * @template T
+     * @param {T[]|Object.{string: T}} list
+     * @param {function(T):boolean} predictor
+     * @returns {number}
+     */
+    countIf: (list, predictor) => {
+        let cnt = 0
+        for (let idx in list) {
+            if (predictor(list[idx])) {
+                cnt += 1
+            }
+        }
+        return cnt
+    },
 }
