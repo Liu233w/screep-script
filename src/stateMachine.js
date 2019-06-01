@@ -141,16 +141,24 @@ const ACTIONS = {
                     //       can change to a longHarvester ? (may be move too slow)
                     sayWithSufix(creep, '🔄⚠')
                 }
+                return
+            }
+
+            // a harvester with a target, and source drained
+            if (source.energy <= 0) {
+                if (creep.carry.energy > 0) {
+                    tryChangeState(creep, STATES.IDLE)
+                } else {
+                    moveTo(creep, source)
+                    sayWithSufix(creep, '🔄⚠')
+                }
+                return
             }
 
             const result = creep.harvest(source)
-            if (result == ERR_NOT_IN_RANGE) {
+            if (result === ERR_NOT_IN_RANGE) {
                 moveTo(creep, source)
                 return
-            }
-            if (result === ERR_NOT_ENOUGH_ENERGY) {
-                sayWithSufix(creep, '🔄⚠')
-                moveTo(creep, source)
             }
         } else {
             tryChangeState(creep, STATES.IDLE)
