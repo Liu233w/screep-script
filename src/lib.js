@@ -1,3 +1,5 @@
+require('./Traveler')
+
 const FIND_FILTERS = {
     transfer: () => ({
         filter: (structure) => {
@@ -38,8 +40,14 @@ const FIND_FILTERS = {
     }),
 }
 
+/**
+ * 
+ * @param {Creep} creep 
+ * @param {RoomObject|RoomPosition} target 
+ * @param {string} stroke 
+ */
 function moveTo(creep, target, stroke = '#ffffff') {
-    return creep.moveTo(target, {
+    return creep.travelTo(target, {
         visualizePathStyle: {
             stroke,
         },

@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 const lib = require('./lib')
+require('./Traveler')
 
 /**
  * 
@@ -29,7 +30,7 @@ function pickUp(creep, pos) {
             creep.say('done')
         }
     } else {
-        creep.moveTo(pos)
+        creep.travelTo(pos)
     }
 }
 
