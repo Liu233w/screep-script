@@ -128,7 +128,7 @@ module.exports.loop = function () {
         ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
         ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 2)
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
-        ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep)
+        ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep, 4)
 
         const shouldSpawnClaimerOnLHBodyPartNumber = 13
         const shouldSpawnClaimer =
