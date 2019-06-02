@@ -3,8 +3,6 @@ const {
     renewOrRecycle,
 } = require('./lib')
 
-const lib = require('./lib')
-
 /**
  * 
  * @param {Creep} creep 
@@ -28,7 +26,9 @@ function run(creep) {
     const enemy = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS)
     if (enemy) {
         if (creep.attack(enemy) === ERR_NOT_IN_RANGE) {
-            moveTo(creep, enemy.pos)
+            creep.travelTo(enemy, {
+                movingTarget: true,
+            })
         }
         return
     }
@@ -56,16 +56,12 @@ function run(creep) {
     // FIXME: if a peaceful room are not visible, this may cause bug
     if (flag && (!flag.room || flag.room.find(FIND_HOSTILE_CREEPS).length > 0)) {
         if (flag.pos.roomName !== creep.pos.roomName) {
-            moveTo(creep, flag, '#ff0000')
+            creep.travelTo(flag)
             return
         }
     }
 
     moveToSpawnAndThen(creep)
-}
-
-function moveTo(creep, target, stroke = '#ff0000') {
-    lib.moveTo(creep, target, stroke)
 }
 
 module.exports.run = run

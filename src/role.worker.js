@@ -1,6 +1,5 @@
 const {
     FIND_FILTERS,
-    checkCreepRole,
 } = require('./lib')
 
 const utils = require('./utils')
@@ -17,7 +16,16 @@ function run(creep) {
     })
 }
 
+/**
+ * 
+ * @param {Creep} creep 
+ */
 function noEnergyCallBack(creep) {
+
+    if ([STATES.HARVEST, STATES.TAKE, STATES.DESTRUCT].includes(creep.memory.state)) {
+        return creep.memory.state
+    }
+
     const tombStone = creep.pos.findClosestByRange(FIND_TOMBSTONES, {
         filter: t => t.store.energy > 0 && t.pos.getRangeTo(creep) < 20,
     })
@@ -27,7 +35,7 @@ function noEnergyCallBack(creep) {
 
     if (creep.room.find(FIND_FLAGS, {
             filter: f => f.color === COLOR_GREY,
-        }).length > 0) {
+        }).length > 0 && stateMachine.getStateCount(creep.memory.spawn, STATES.DESTRUCT) <= 0) {
         return STATES.DESTRUCT
     }
 
@@ -68,10 +76,10 @@ function arrange(creep) {
     const transferEnergy = _.reduce(toTransfer, (sum, curr) => sum + (curr.energyCapacity - curr.energy), 0)
     const carrierMaxEnergy = _.reduce(creep.room.find(FIND_MY_CREEPS, {
         // IDLE carrier means it cannot find a place to take energy
-        filter: c => c.memory.role === 'carrier' && c.memory.state !== STATES.IDLE,
+        filter: c => c.memory.role === 'carrier' && ![STATES.IDLE, STATES.RENEW].includes(c.memory.state),
     }), (sum, curr) => sum + curr.carryCapacity, 0)
-    if (transferEnergy > carrierMaxEnergy * 2) {
-        console.log(`doing carrier's job, need energy ${transferEnergy}, while carriers' capacity*2 =  ${carrierMaxEnergy*2}`)
+    if (transferEnergy > carrierMaxEnergy * 3) {
+        console.log(`doing carrier's job, need energy ${transferEnergy}, while carriers' capacity*3 =  ${carrierMaxEnergy*3}`)
         return STATES.TRANSFER
     }
 

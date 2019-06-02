@@ -41,20 +41,6 @@ const FIND_FILTERS = {
 }
 
 /**
- * 
- * @param {Creep} creep 
- * @param {RoomObject|RoomPosition} target 
- * @param {string} stroke 
- */
-function moveTo(creep, target, stroke = '#ffffff') {
-    return creep.travelTo(target, {
-        visualizePathStyle: {
-            stroke,
-        },
-    })
-}
-
-/**
  * If spawn are able to build better creep, recycle previous one; else renew it
  * @param {StructureSpawn} spawn 
  * @param {Creep} creep 
@@ -112,7 +98,7 @@ function moveToSpawnAndThen(creep, callBack) {
     const mySpawn = findASpawnOfMine(creep)
     if (mySpawn) {
         if (!creep.pos.inRangeTo(mySpawn, SPAWN_RENEW_RATIO)) {
-            moveTo(creep, mySpawn, '#00ff00')
+            creep.travelTo(mySpawn)
         } else {
             if (callBack) {
                 callBack(mySpawn)
@@ -144,7 +130,7 @@ function moveToHomeAndThen(creep, callBack) {
     const mySpawn = findASpawnOfMine(creep)
     if (mySpawn) {
         if (creep.room.name !== mySpawn.room.name) {
-            moveTo(creep, mySpawn, '#00ff00')
+            creep.travelTo(mySpawn)
         } else {
             if (callBack) {
                 callBack()
@@ -204,7 +190,7 @@ function sayWithSufix(creep, message) {
     }
     said.msg += message
     said.msg += '|'
-    
+
     creep.say(said.msg + creep.memory.role[0] + creep.name[creep.name.length - 1] + (creep.memory.toDie ? '💀' : ''), true)
 }
 
@@ -217,7 +203,7 @@ function sayWithSufix(creep, message) {
 function moveToAndThen(creep, target, callBack) {
     const result = callBack(creep, target)
     if (result === ERR_NOT_IN_RANGE) {
-        moveTo(creep, target)
+        creep.travelTo(target)
     }
     return result
 }
@@ -237,7 +223,6 @@ function checkCreepRole(creep, spawn, role) {
 
 module.exports = {
     moveToSpawnAndThen,
-    moveTo,
     FIND_FILTERS,
     bodyCost,
     renewOrRecycle,

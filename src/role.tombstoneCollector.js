@@ -24,7 +24,7 @@ function run(creep) {
                     return
                 }
             }
-            
+
             // else
             const item = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES)
             if (item) {
@@ -52,9 +52,7 @@ function run(creep) {
     lib.sayWithSufix(creep, '📦')
 
     // else
-    const toStore = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-        filter: s => s.structureType === STRUCTURE_CONTAINER && _.sum(s.store) < s.storeCapacity,
-    })
+    const toStore = creep.pos.findClosestByRange(FIND_STRUCTURES, lib.FIND_FILTERS.storeToStructure(creep))
     if (!toStore) {
         creep.say('⚠📦', true)
         return

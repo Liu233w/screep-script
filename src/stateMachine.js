@@ -3,7 +3,6 @@ const {
     FIND_FILTERS,
     renewOrRecycle,
     adjecentSource,
-    moveTo,
     moveToHomeAndThen,
     sayWithSufix,
     moveToAndThen,
@@ -81,6 +80,9 @@ do not pre-define dying and no energy strategy, let each role use tickFunction d
 
 every job can have a progress in percentage, so other creep can check it. eg. a carrier can check
 a nearby harvester if it's finishing, so it can decide to wait for it or fetch from a nearby container
+
+dont have to add 'HARVEST' or 'TAKE' in the tick function, let current job (eg. transfer) handle no energy situation, and set status to IDLE,
+then schedule function can add that job.
 */
 
 const ACTIONS = {
@@ -93,7 +95,7 @@ const ACTIONS = {
         if (target) {
             sayWithSufix(creep, '🚧')
             if (creep.build(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
-                moveTo(creep, target)
+                creep.travelTo(target)
             }
         } else {
             tryChangeState(creep, STATES.IDLE)
@@ -156,7 +158,7 @@ const ACTIONS = {
                 if (creep.carry.energy > 0) {
                     tryChangeState(creep, STATES.IDLE)
                 } else {
-                    moveTo(creep, source)
+                    creep.travelTo(source)
                     sayWithSufix(creep, '🔄⚠')
                     creep.memory.target = null
                 }
@@ -165,7 +167,7 @@ const ACTIONS = {
 
             const result = creep.harvest(source)
             if (result === ERR_NOT_IN_RANGE) {
-                moveTo(creep, source)
+                creep.travelTo(source)
                 return
             }
         } else {
@@ -236,7 +238,9 @@ const ACTIONS = {
             }
 
             if (result == ERR_NOT_IN_RANGE) {
-                moveTo(creep, best, '#ffaa00')
+                creep.travelTo(best, {
+                    movingTarget: best instanceof Creep,
+                })
             } else if (result !== OK) {
                 console.log(`take error: ${result}, by ${creep.name}`)
                 tryChangeState(creep, STATES.IDLE)
@@ -274,7 +278,7 @@ const ACTIONS = {
             target = utils.minBy(targets, t => t.energy)
 
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
-                moveTo(creep, target)
+                creep.travelTo(target)
             }
         } else {
             tryChangeState(creep, STATES.IDLE)
@@ -294,14 +298,14 @@ const ACTIONS = {
         if (Memory.messageToSign && Memory.messageToSign[creep.room.controller.id]) {
             const result = creep.signController(creep.room.controller, Memory.messageToSign[creep.room.controller.id])
             if (result === ERR_NOT_IN_RANGE) {
-                moveTo(creep, creep.room.controller)
+                creep.travelTo(creep.room.controller)
             } else if (result === OK) {
                 delete Memory.messageToSign[creep.room.controller.id]
             }
         }
         const result = creep.upgradeController(creep.room.controller)
         if (result == ERR_NOT_IN_RANGE) {
-            moveTo(creep, creep.room.controller)
+            creep.travelTo(creep.room.controller)
         }
     },
     /**
@@ -349,7 +353,7 @@ const ACTIONS = {
         if (target) {
             sayWithSufix(creep, '🔨')
             if (creep.repair(target) == ERR_NOT_IN_RANGE || adjecentSource(creep)) {
-                moveTo(creep, target)
+                creep.travelTo(target)
             }
         } else {
             tryChangeState(creep, STATES.IDLE)
@@ -387,7 +391,9 @@ const ACTIONS = {
         if (target) {
             sayWithSufix(creep, '🔋')
             if (creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                moveTo(creep, target)
+                creep.travelTo(target, {
+                    movingTarget: target instanceof Creep,
+                })
             }
         } else {
             console.log(`cannot find a target to store energy, by ${creep.name}`)
@@ -424,7 +430,7 @@ const ACTIONS = {
             if (flag) {
 
                 if (flag.pos.roomName !== creep.pos.roomName) {
-                    moveTo(creep, flag, '#ffaa00')
+                    creep.travelTo(flag)
                 } else {
 
                     let sources = creep.room.find(FIND_SOURCES, {
@@ -457,7 +463,7 @@ const ACTIONS = {
 
                     const result = creep.harvest(source)
                     if (result == ERR_NOT_IN_RANGE) {
-                        moveTo(creep, source, '#ffaa00')
+                        creep.travelTo(source)
                     }
                 }
             } else {
@@ -491,7 +497,7 @@ const ACTIONS = {
                 // console.log(`res: ${res}, by ${creep.name}`)
             } else {
                 // console.log(`destruct done, by ${creep.name}`)
-                tryChangeState(creep, STATES.IDLE)
+                tryChangeState(creep, STATES.TAKE)
                 flag.remove()
                 return
             }

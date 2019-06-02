@@ -124,9 +124,12 @@ module.exports.loop = function () {
         // console.log(`should upgrade creep ? ${shouldUpgradeCreep}`)
 
         // TODO: try re-order body parts, put MOVE and CARRY to back
+        // TODO: use 5 WORK parts, one harvester per source
+        // TODO: how to handle repair ?
         ensureCreep('harvester', harvesterShouldCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
         ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
-        ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 2)
+        // TODO: change maxRepeat by room capasicity?
+        ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 3)
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep, 4)
 
