@@ -135,8 +135,8 @@ module.exports.loop = function () {
         ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
         // TODO: change maxRepeat by room capasicity?
         ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 3)
-        ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, RANGED_ATTACK, MOVE, MOVE], false)
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep, 4)
+        ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, RANGED_ATTACK, MOVE, MOVE], false)
 
         const shouldSpawnClaimerOnLHBodyPartNumber = 13
         const shouldSpawnClaimer =
@@ -163,20 +163,19 @@ module.exports.loop = function () {
         }
 
         // allocate source
-        if (!Memory.assignedHarvester || !Memory.assignedHarvester[spawn.name]) {
-            const harvesters = _.filter(Game.creeps, c => lib.checkCreepRole(c, spawn, 'harvester'))
-            // console.log(`harvesters.length ${harvesters.length}, harvesterCount ${harvesterCount}, harvesterShouldCount ${harvesterShouldCount}`)
-            if (harvesterCount === harvesterShouldCount && harvesterCount === harvesters.length) {
-                // TODO: move 2 into a const
-                for (let i = 0; i < harvesterCount; i += 2) {
-                    harvesters[i].memory.sourceTarget = sources[Math.ceil(i / 2)].id
-                }
-                const a = Memory.assignedHarvester || {}
-                a[spawn.name] = true
-                Memory.assignedHarvester = a
-            }
+        if (harvesterCount !== harvesterShouldCount) {
+            const assignedHarvester = Memory.assignedHarvester || {}
+            Memory.assignedHarvester = assignedHarvester
+            Memory.assignedHarvester[spawn.name] = false
         }
-
+        if (harvesterCount === harvesterShouldCount && !Memory.assignedHarvester[spawn.name]) {
+            const harvesters = _.filter(Game.creeps, c => lib.checkCreepRole(c, spawn, 'harvester'))
+            for (let i = 0; i < harvesters.length; i += 1) {
+                // TODO: move 2 into a const
+                harvesters[i].memory.sourceTarget = sources[Math.floor(i / 2)].id
+            }
+            Memory.assignedHarvester[spawn.name] = true
+        }
 
     } catch (err) {
         errors.push(err)
