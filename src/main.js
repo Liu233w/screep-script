@@ -135,7 +135,7 @@ module.exports.loop = function () {
         ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep, 10)
         // TODO: change maxRepeat by room capasicity?
         ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 3)
-        ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep, 4)
+        ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep, 3)
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, RANGED_ATTACK, MOVE, MOVE], false)
 
         const shouldSpawnClaimerOnLHBodyPartNumber = 13
@@ -331,7 +331,7 @@ function ensureCreep(role, number, bodyUnit, repeat = true, maxRepeat = null, op
 
             // kill smallest creep to spawn a bigger one
             const message = `kill ${dieList[0].name} to make a better one, old body parts: ${_.map(dieList[0].body, 'type')}, new body parts: ${body}, role: ${role}, at ${Game.time}`
-            Game.notify(message, 60)
+            // Game.notify(message, 60)
             console.log(message)
             dieList[0].memory.oldRole = role
             dieList[0].memory.role = 'toDie'

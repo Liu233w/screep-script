@@ -444,7 +444,7 @@ const ACTIONS = {
                             return
                         } else {
                             // still try to move to source to save time
-                            Game.notify(`source drained, at ${Game.time}`, 30)
+                            // Game.notify(`source drained, at ${Game.time}`, 30)
                             sayWithSufix(creep, '🔄⚠')
                             sources = creep.room.find(FIND_SOURCES)
                         }
