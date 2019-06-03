@@ -132,7 +132,7 @@ module.exports.loop = function () {
         // TODO: use 5 WORK parts, one harvester per source
         // TODO: how to handle repair ?
         ensureCreep('harvester', harvesterShouldCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
-        ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
+        ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep, 10)
         // TODO: change maxRepeat by room capasicity?
         ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 3)
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep, 4)
