@@ -81,20 +81,25 @@ module.exports.loop = function () {
         let carrierShouldCount = Math.max(0, harvesterCount - 1)
 
         let warriorShouldCount = 0
-        if (spawn.room.find(FIND_HOSTILE_CREEPS).length > 0 &&
+
+        let hostileCount = spawn.room.find(FIND_HOSTILE_CREEPS).length
+        if (hostileCount > 0 &&
             spawn.room.find(FIND_MY_STRUCTURES, {
                 filter: s => s.structureType === STRUCTURE_TOWER && s.energy > 0,
             }).length <= 0) {
             console.log('hostile creep in room, and no working tower')
-            warriorShouldCount += 1
+            warriorShouldCount += hostileCount
         }
         // FIXME: if we cannot see the room ?
         const redFlag = _.filter(Game.flags, a => a.color === COLOR_RED)[0]
-        if (redFlag && redFlag.room && redFlag.room.find(FIND_HOSTILE_CREEPS).length > 0) {
-            const message = `hostile creep in other room, at ${Game.time}`
-            console.log(message)
-            // Game.notify(message, 30)
-            warriorShouldCount += 2
+        if (redFlag && redFlag.room) {
+            hostileCount = redFlag.room.find(FIND_HOSTILE_CREEPS).length
+            if (hostileCount > 0) {
+                const message = `hostile creep in other room, at ${Game.time}`
+                console.log(message)
+                Game.notify(message, 30)
+                warriorShouldCount += 2 * hostileCount
+            }
         }
 
         // TODO: store flag color other where ?
@@ -130,7 +135,7 @@ module.exports.loop = function () {
         ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep)
         // TODO: change maxRepeat by room capasicity?
         ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 3)
-        ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, ATTACK, MOVE, MOVE], false)
+        ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, RANGED_ATTACK, MOVE, MOVE], false)
         ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep, 4)
 
         const shouldSpawnClaimerOnLHBodyPartNumber = 13

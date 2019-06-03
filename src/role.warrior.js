@@ -30,6 +30,9 @@ function run(creep) {
                 movingTarget: true,
             })
         }
+        if (creep.pos.inRangeTo(enemy, 3)) {
+            creep.rangedAttack(enemy)
+        }
         return
     }
 
