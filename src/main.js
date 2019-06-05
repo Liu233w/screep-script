@@ -90,7 +90,8 @@ module.exports.loop = function () {
             console.log('hostile creep in room, and no working tower')
             warriorShouldCount += hostileCount
         }
-        // FIXME: if we cannot see the room ?
+
+        // hostile info in other room
         const redFlag = _.filter(Game.flags, a => a.color === COLOR_RED)[0]
         if (redFlag && redFlag.room) {
             hostileCount = redFlag.room.find(FIND_HOSTILE_CREEPS).length
@@ -98,8 +99,15 @@ module.exports.loop = function () {
                 const message = `hostile creep in other room, at ${Game.time}`
                 console.log(message)
                 Game.notify(message, 30)
-                warriorShouldCount += 2 * hostileCount
+                redFlag.memory.hasHostile = true
+            } else {
+                // let warrior see the room, and the room is clear
+                redFlag.memory.hasHostile = false
             }
+        }
+
+        if (redFlag && redFlag.memory.hasHostile) {
+            warriorShouldCount += 2 * hostileCount
         }
 
         // TODO: store flag color other where ?
@@ -129,13 +137,15 @@ module.exports.loop = function () {
         // console.log(`should upgrade creep ? ${shouldUpgradeCreep}`)
 
         // TODO: try re-order body parts, put MOVE and CARRY to back
-        // TODO: use 5 WORK parts, one harvester per source
-        // TODO: how to handle repair ?
-        ensureCreep('harvester', harvesterShouldCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
-        ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep, 10)
-        // TODO: change maxRepeat by room capasicity?
-        ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 3)
-        ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep, 3)
+        if (!redFlag || !redFlag.memory.hasHostile) {
+            // TODO: use 5 WORK parts, one harvester per source
+            // TODO: how to handle repair ?
+            ensureCreep('harvester', harvesterShouldCount, [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE], false)
+            ensureCreep('worker', workerShouldCount, [WORK, CARRY, MOVE], shouldUpgradeCreep, 10)
+            ensureCreep('longHarvester', longHarvesterShouldCount, [WORK, CARRY, MOVE, CARRY, MOVE], shouldUpgradeCreep, 3)
+            // TODO: change maxRepeat by room capasicity?
+            ensureCreep('carrier', carrierShouldCount, [CARRY, CARRY, MOVE], true, 3)
+        }
         ensureCreep('warrior', warriorShouldCount, [TOUGH, ATTACK, RANGED_ATTACK, MOVE, MOVE], false)
 
         const shouldSpawnClaimerOnLHBodyPartNumber = 13
