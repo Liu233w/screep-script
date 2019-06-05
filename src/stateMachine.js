@@ -85,12 +85,22 @@ dont have to add 'HARVEST' or 'TAKE' in the tick function, let current job (eg. 
 then schedule function can add that job.
 */
 
+/*
+TODO: try empty self if it is going to renew.
+if a container or empty structure is nearby (or on the road to spawn), transfer energy first
+*/
+
+/*
+TODO: when moving, avoid the road beside sources, the harvester may be there
+*/
+
 const ACTIONS = {
     /**
      * 
      * @param {Creep} creep 
      */
     [STATES.BUILD](creep) {
+        // TODO: if a nearly finished structure is nearby, try build it first
         const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
         if (target) {
             sayWithSufix(creep, '🚧')

@@ -50,11 +50,7 @@ module.exports.loop = function () {
         ensureCreep('builder', 0, [WORK, CARRY, MOVE])
 
         // TODO: multiple room
-        // TODO: assign creep to source
-        // const harvesterCount = _.reduce(
-        //     Game.spawns['Spawn1'].room.find(FIND_SOURCES),
-        //     (sum, curr) => sum + lib.findAdjcentPassableAreaNumber(curr),
-        //     0)
+        // TODO: use controller (owned) as the center, rather than spawn. prepar for multiple spawns in one room
 
         /*
         source: 3000 
