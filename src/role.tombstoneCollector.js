@@ -52,7 +52,13 @@ function run(creep) {
     lib.sayWithSufix(creep, '📦')
 
     // else
-    const toStore = creep.pos.findClosestByRange(FIND_STRUCTURES, lib.FIND_FILTERS.storeToStructure(creep))
+    // storage first
+    let toStore = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+        filter: s => s.structureType === STRUCTURE_STORAGE && _.sum(s.store) < s.storeCapacity,
+    })
+    if (!toStore) {
+        toStore = creep.pos.findClosestByRange(FIND_STRUCTURES, lib.FIND_FILTERS.storeToStructure(creep))
+    }
     if (!toStore) {
         creep.say('⚠📦', true)
         return
