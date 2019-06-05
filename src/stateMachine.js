@@ -92,6 +92,7 @@ if a container or empty structure is nearby (or on the road to spawn), transfer 
 
 /*
 TODO: when moving, avoid the road beside sources, the harvester may be there
+TODO: assign harvester to a specific location, so they can avoid each other, and position can be cached in memory and let other get them when find route
 */
 
 const ACTIONS = {
