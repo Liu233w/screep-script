@@ -95,6 +95,11 @@ TODO: when moving, avoid the road beside sources, the harvester may be there
 TODO: assign harvester to a specific location, so they can avoid each other, and position can be cached in memory and let other get them when find route
 */
 
+/*
+TODO: add creep memory (log), record every job executed in a tick, its target and the result
+have a max log size, if exceed, remove oldest log
+*/
+
 const ACTIONS = {
     /**
      * 
