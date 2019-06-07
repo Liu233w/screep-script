@@ -78,7 +78,7 @@ module.exports.loop = function () {
 
         let warriorShouldCount = 0
 
-        let hostileCount = spawn.room.find(FIND_HOSTILE_CREEPS).length
+        const hostileCount = spawn.room.find(FIND_HOSTILE_CREEPS).length
         if (hostileCount > 0 &&
             spawn.room.find(FIND_MY_STRUCTURES, {
                 filter: s => s.structureType === STRUCTURE_TOWER && s.energy > 0,
@@ -90,12 +90,12 @@ module.exports.loop = function () {
         // hostile info in other room
         const redFlag = _.filter(Game.flags, a => a.color === COLOR_RED)[0]
         if (redFlag && redFlag.room) {
-            hostileCount = redFlag.room.find(FIND_HOSTILE_CREEPS).length
+            const hostileCount = redFlag.room.find(FIND_HOSTILE_CREEPS).length
             if (hostileCount > 0) {
                 const message = `hostile creep in other room, at ${Game.time}`
                 console.log(message)
                 Game.notify(message, 30)
-                redFlag.memory.hasHostile = true
+                redFlag.memory.hasHostile = hostileCount
             } else {
                 // let warrior see the room, and the room is clear
                 redFlag.memory.hasHostile = false
@@ -103,7 +103,7 @@ module.exports.loop = function () {
         }
 
         if (redFlag && redFlag.memory.hasHostile) {
-            warriorShouldCount += 2 * hostileCount
+            warriorShouldCount += 2 * redFlag.memory.hasHostile
         }
 
         // TODO: store flag color other where ?
