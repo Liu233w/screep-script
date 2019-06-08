@@ -1,6 +1,7 @@
 const {
     moveToSpawnAndThen,
     renewOrRecycle,
+    sayWithSufix,
 } = require('./lib')
 
 /**
@@ -25,6 +26,7 @@ function run(creep) {
 
     const enemy = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS)
     if (enemy) {
+        sayWithSufix(creep, '⚔')
         if (creep.attack(enemy) === ERR_NOT_IN_RANGE) {
             creep.travelTo(enemy, {
                 movingTarget: true,
@@ -57,6 +59,7 @@ function run(creep) {
 
     let flag = _.filter(Game.flags, a => a.color === TARGET_FLAG_COLOR)[0]
     if (flag && flag.memory.hasHostile && flag.pos.roomName !== creep.pos.roomName) {
+        sayWithSufix(creep, '🚞')
         creep.travelTo(flag)
         return
     }
