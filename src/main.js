@@ -96,13 +96,25 @@ module.exports.loop = function () {
                 console.log(message)
                 Game.notify(message, 30)
                 redFlag.memory.hasHostile = hostileCount
+                if (!redFlag.memory.hostileShowedupTime) {
+                    redFlag.memory.hostileShowedupTime = Game.time
+                }
             } else {
                 // let warrior see the room, and the room is clear
                 redFlag.memory.hasHostile = false
+                redFlag.memory.hostileShowedupTime = undefined
             }
         }
 
-        if (redFlag && redFlag.memory.hasHostile) {
+        /**
+         * try attack hostile in another room in 500 ticks, if exceed the time, do not spawn warrior anymore 
+         * until hostile passed away
+         */
+        const MAX_TRY_ATTACK_HOSTILE_TIME = 500
+        const hostileShowedTimeSpan = Game.time - redFlag.memory.hostileShowedupTime
+
+        if (redFlag && redFlag.memory.hasHostile &&
+            (hostileShowedTimeSpan <= MAX_TRY_ATTACK_HOSTILE_TIME || hostileShowedTimeSpan > 1500)) {
             warriorShouldCount += 2 * redFlag.memory.hasHostile
         }
 

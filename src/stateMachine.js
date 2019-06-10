@@ -26,13 +26,7 @@ const STATES = {
 const utils = require('./utils')
 
 /*
-TODO: add target to memory, will reset when change state. use it as target first
-TODO: add state 'GO_ROOM' can build longHarvester and longBuilder based on it
 TODO: take distance into consideration when arrange job
-*/
-
-/*
-TODO: hostile creep will drop resources, take that into consideration
 */
 
 /*
