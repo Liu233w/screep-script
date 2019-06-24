@@ -5,8 +5,8 @@ module.exports = function(grunt) {
     grunt.initConfig({
         screeps: {
             options: {
-                email: 'wwwlsmcom@outlook.com',
-                password: 'x9bY0HzAFTBr',
+                email: '',
+                password: '',
                 branch: 'default',
                 ptr: false,
             },
